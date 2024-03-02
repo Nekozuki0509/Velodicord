@@ -113,6 +113,11 @@ public class Velodicord extends ListenerAdapter {
             container.ifPresent(pluginContainer -> pluginContainer.getExecutorService().shutdown());
         }
 
+        logger.info("Velodicord loaded");
+    }
+
+    @Subscribe
+    public void onProxyInitialization(ProxyInitializeEvent proxyInitializeEvent) {
         try {
             jda = JDABuilder.createDefault(config.getString(Route.from("BotToken")))
                     .setChunkingFilter(ChunkingFilter.ALL)
@@ -137,12 +142,6 @@ public class Velodicord extends ListenerAdapter {
         if (webhook == null) {
             webhook = textChannel.createWebhook(webhookname).complete();
         }
-
-        logger.info("Velodicord loaded");
-    }
-
-    @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent proxyInitializeEvent) {
 
         proxy.getEventManager().register(this, ListenerBoundEvent.class, PostOrder.FIRST, event ->
                 textChannel.sendMessage("✅velocityサーバーが起動しました").queue()
