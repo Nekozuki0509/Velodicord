@@ -56,7 +56,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -97,17 +96,6 @@ public class Velodicord extends ListenerAdapter {
         this.logger = logger;
 
         try {
-            jda = JDABuilder.createDefault(config.getString(Route.from("BotToken")))
-                    .setChunkingFilter(ChunkingFilter.ALL)
-                    .setMemberCachePolicy(MemberCachePolicy.ALL)
-                    .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
-                    .addEventListeners(this)
-                    .build();
-        } catch (LoginException e) {
-            logger.error("discord botにログインできませんでした:\n"+e);
-        }
-
-        try {
             config = YamlDocument.create(new File(dataDirectory.toFile(), "config.yaml"),
                     Objects.requireNonNull(getClass().getResourceAsStream("/config.yml")),
                     GeneralSettings.DEFAULT,
@@ -123,6 +111,17 @@ public class Velodicord extends ListenerAdapter {
             logger.error("Velodicordのconfigを読み込めませんでした");
             Optional<PluginContainer> container = proxy.getPluginManager().getPlugin("velodicord");
             container.ifPresent(pluginContainer -> pluginContainer.getExecutorService().shutdown());
+        }
+
+        try {
+            jda = JDABuilder.createDefault(config.getString(Route.from("BotToken")))
+                    .setChunkingFilter(ChunkingFilter.ALL)
+                    .setMemberCachePolicy(MemberCachePolicy.ALL)
+                    .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
+                    .addEventListeners(this)
+                    .build();
+        } catch (LoginException e) {
+            logger.error("discord botにログインできませんでした:\n"+e);
         }
 
         textChannel = jda.getTextChannelById(config.getString(Route.from("ChannelId")));
