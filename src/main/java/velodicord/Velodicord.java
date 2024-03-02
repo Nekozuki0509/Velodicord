@@ -33,6 +33,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -53,9 +54,12 @@ import javax.security.auth.login.LoginException;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -89,15 +93,31 @@ public class Velodicord extends ListenerAdapter {
 
     private final OkHttpClient httpClient = new OkHttpClient();
 
+    @DataDirectory
+    Path dataDirectory;
+
 
     @Inject
     public Velodicord(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
         this.proxy = proxy;
         this.logger = logger;
+        this.dataDirectory = dataDirectory;
+
+        logger.info("Velodicord loaded");
+    }
+
+    @Subscribe
+    public void onProxyInitialization(ProxyInitializeEvent proxyInitializeEvent) {
+        if (Files.notExists(dataDirectory))
+            try {
+                Files.createDirectory(dataDirectory);
+            } catch (IOException e) {
+                throw new RuntimeException("Velodicordのconfigディレクトリを作れませんでした");
+            }
 
         try {
             config = YamlDocument.create(new File(dataDirectory.toFile(), "config.yaml"),
-                    Objects.requireNonNull(getClass().getResourceAsStream("/config.yml")),
+                    Objects.requireNonNull(getClass().getResourceAsStream("/config.yaml")),
                     GeneralSettings.DEFAULT,
                     LoaderSettings.builder().setAutoUpdate(true).build(),
                     DumperSettings.DEFAULT,
@@ -113,11 +133,6 @@ public class Velodicord extends ListenerAdapter {
             container.ifPresent(pluginContainer -> pluginContainer.getExecutorService().shutdown());
         }
 
-        logger.info("Velodicord loaded");
-    }
-
-    @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent proxyInitializeEvent) {
         try {
             jda = JDABuilder.createDefault(config.getString(Route.from("BotToken")))
                     .setChunkingFilter(ChunkingFilter.ALL)
@@ -129,6 +144,11 @@ public class Velodicord extends ListenerAdapter {
             logger.error("discord botにログインできませんでした:\n"+e);
         }
 
+        proxy.getChannelRegistrar().register(MinecraftChannelIdentifier.create("velocity", "fabdicord"));
+    }
+
+    @Override
+    public void onReady(@Nonnull ReadyEvent readyEvent) {
         textChannel = jda.getTextChannelById(config.getString(Route.from("ChannelId")));
         if (textChannel == null) {
             throw new NullPointerException("チャンネルIDが不正です");
@@ -143,15 +163,13 @@ public class Velodicord extends ListenerAdapter {
             webhook = textChannel.createWebhook(webhookname).complete();
         }
 
-        proxy.getEventManager().register(this, ListenerBoundEvent.class, PostOrder.FIRST, event ->
-                textChannel.sendMessage("✅velocityサーバーが起動しました").queue()
-        );
+        textChannel.sendMessage("✅velocityサーバーが起動しました").queue();
 
         proxy.getEventManager().register(this, ListenerCloseEvent.class, PostOrder.FIRST, event ->
                 textChannel.sendMessage("❌velocityサーバーが停止しました").queue()
         );
 
-        proxy.getEventManager().register(this, ProxyShutdownEvent.class, PostOrder.FIRST, event ->
+        proxy.getEventManager().register(this, ProxyShutdownEvent.class, PostOrder.LAST, event ->
                 jda.shutdownNow()
         );
 
@@ -164,11 +182,11 @@ public class Velodicord extends ListenerAdapter {
             textChannel.sendMessage(new EmbedBuilder()
                     .setTitle("["+player.getUsername()+"]が退出しました")
                     .setColor(Color.blue)
-                    .setThumbnail("https://crafatar.com/avatars/"+player.getUniqueId()+"?overlay")
+                    .setThumbnail("https://mc-heads.net/avatar/"+player.getUsername()+".png")
                     .build()).queue();
         });
 
-        proxy.getEventManager().register(this, ServerConnectedEvent.class, PostOrder.FIRST, event -> {
+        proxy.getEventManager().register(this, ServerConnectedEvent.class, event -> {
             Player player = event.getPlayer();
             String targetServer = event.getServer().getServerInfo().getName();
 
@@ -185,7 +203,7 @@ public class Velodicord extends ListenerAdapter {
                         textChannel.sendMessage(new EmbedBuilder()
                                 .setTitle("["+player.getUsername()+"]が["+server.getServerInfo().getName()+"]から["+targetServer+"]へ移動しました")
                                 .setColor(Color.blue)
-                                .setThumbnail("https://crafatar.com/avatars/"+player.getUniqueId()+"?overlay")
+                                .setThumbnail("https://mc-heads.net/avatar/"+player.getUsername()+".png")
                                 .build()).queue();
                     },
                     () -> {
@@ -196,7 +214,7 @@ public class Velodicord extends ListenerAdapter {
                         textChannel.sendMessage(new EmbedBuilder()
                                 .setTitle("["+player.getUsername()+"]が入室しました")
                                 .setColor(Color.blue)
-                                .setThumbnail("https://crafatar.com/avatars/"+player.getUniqueId()+"?overlay")
+                                .setThumbnail("https://mc-heads.net/avatar/"+player.getUsername()+".png")
                                 .build()).queue();
                     }
             );
@@ -218,6 +236,7 @@ public class Velodicord extends ListenerAdapter {
             TextComponent.Builder component = text()
                     .append(text("["+server+"]", DARK_GREEN))
                     .append(text("<"+player.getUsername()+"> "));
+            String japanese = Japanizer.japanize(message);
             if (message.contains("@")){
                 for (Member member : textChannel.getMembers()) {
                     String usernameMention = "@" + member.getUser().getName();
@@ -245,8 +264,7 @@ public class Velodicord extends ListenerAdapter {
             }
             component.append(MiniMessage.miniMessage().deserialize(message));
             discord = "[" + server + "] " + discord;
-            String japanese;
-            if (!(japanese=Japanizer.japanize(message)).isEmpty()) {
+            if (!japanese.isEmpty()) {
                 component.append(text("(" + japanese + ")", GOLD));
                 discord += "(" + japanese + ")";
             }
@@ -254,9 +272,9 @@ public class Velodicord extends ListenerAdapter {
             JsonObject body = new JsonObject();
             body.addProperty("content", discord);
             body.addProperty("username", player.getUsername());
-            body.addProperty("avatar_url", "https://crafatar.com/avatars/"+player.getUniqueId()+"?overlay");
+            body.addProperty("avatar_url", "https://mc-heads.net/avatar/"+player.getUsername()+".png");
             JsonObject allowedMentions = new JsonObject();
-            allowedMentions.add("parse", new Gson().toJsonTree("[\"everyone\", \"users\", \"roles\"]").getAsJsonArray());
+            allowedMentions.add("parse", new Gson().toJsonTree(new ArrayList<>(List.of("everyone", "users", "roles"))).getAsJsonArray());
             body.add("allowed_mentions", allowedMentions);
             Request request = new Request.Builder()
                     .url(webhook.getUrl())
@@ -274,11 +292,11 @@ public class Velodicord extends ListenerAdapter {
             });
             executor.shutdown();
 
-        event.setResult(denied());
+            event.setResult(denied());
         });
 
         proxy.getEventManager().register(this, PluginMessageEvent.class, event -> {
-            if (!event.getIdentifier().equals(MinecraftChannelIdentifier.create("velocity", "Fabdicord"))) return;
+            if (!event.getIdentifier().equals(MinecraftChannelIdentifier.create("velocity", "fabdicord"))) return;
             //(dis)connect type:server:player
             //death type:server:player:dim:x:y:z:message
             //advancement type:server:player:title:description
@@ -298,10 +316,10 @@ public class Velodicord extends ListenerAdapter {
                         proxy.getAllPlayers().forEach(player ->
                                 player.getTabList().addEntry(tabListEntry)
                         );
-                        bots.put(data[2], new HashMap<String, UUID>(){
+                        bots.put(data[2], new HashMap<>() {
                             {
                                 put(data[1], tabListEntry.getProfile().getId());
-                            };
+                            }
                         });
                         proxy.sendMessage(text()
                                 .append(text("["+data[2]+"(bot)]", AQUA))
@@ -330,19 +348,19 @@ public class Velodicord extends ListenerAdapter {
                 }
 
                 case "DEATH" -> textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle("["+data[2]+"]が"+data[1]+"の"+data[3]+"(x:"+data[4]+", y:"+data[5]+", z:"+data[6]+"で死亡しました")
+                        .setTitle("["+data[2]+"]が["+data[1]+"]の["+data[3]+"(x:"+data[4]+", y:"+data[5]+", z:"+data[6]+"]で死亡しました")
                         .setDescription(data[7])
                         .setColor(Color.red)
                         .build()).queue();
 
                 case "ADVANCEMENT" -> textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle("["+data[2]+"]は"+data[1]+"で["+data[3]+"]を達成しました")
+                        .setTitle("["+data[2]+"]は["+data[1]+"]で["+data[3]+"]を達成しました")
                         .setDescription(data[4])
                         .setColor(Color.green)
                         .build()).queue();
 
                 case "COMMAND" -> textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle("["+data[2]+"]が"+data[1]+"で["+data[3]+"]を実行しました")
+                        .setTitle("["+data[2]+"]が["+data[1]+"]で["+data[3]+"]を実行しました")
                         .setColor(Color.yellow)
                         .build()).queue();
             }
@@ -366,10 +384,9 @@ public class Velodicord extends ListenerAdapter {
 
     @Override
     public void onSlashCommand(@NotNull SlashCommandEvent event) {
-        String command = event.getName();
-        if ("player".equals(command)){
+        if ("player".equals(event.getName())){
             StringBuilder players = new StringBuilder();
-            proxy.getAllPlayers().forEach(player -> players.append("[").append(player.getCurrentServer()).append("]").append(player.getUsername()).append("\n"));
+            proxy.getAllPlayers().forEach(player -> players.append("・[").append(player.getCurrentServer().get().getServerInfo().getName()).append("]").append(player.getUsername()).append("\n"));
             bots.keySet().forEach(player -> bots.get(player).keySet().forEach(server -> players.append("[").append(server).append("][bot]").append(player).append("\n")));
             textChannel.sendMessage(new EmbedBuilder()
                     .setTitle("現在参加しているプレーヤー一覧")
@@ -377,6 +394,8 @@ public class Velodicord extends ListenerAdapter {
                     .setColor(Color.blue)
                     .build()
             ).queue();
+            return;
         }
+        event.reply("不明なコマンドです").setEphemeral(false).queue();
     }
 }
