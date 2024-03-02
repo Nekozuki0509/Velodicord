@@ -84,7 +84,7 @@ public class Velodicord extends ListenerAdapter {
 
     private Webhook webhook;
 
-    private OkHttpClient httpClient = new OkHttpClient();
+    private final OkHttpClient httpClient = new OkHttpClient();
 
 
     @Inject
@@ -200,9 +200,10 @@ public class Velodicord extends ListenerAdapter {
             );
 
             proxy.getAllPlayers().forEach(player1 ->
-                    player1.getTabList().getEntry(player.getUniqueId()).get().setDisplayName((Component) text()
+                    player1.getTabList().getEntry(player.getUniqueId()).get().setDisplayName(text()
                             .append(text("["+targetServer+"]", DARK_GREEN))
                             .append(text(player.getUsername()))
+                            .build()
                     )
             );
         });
@@ -285,10 +286,11 @@ public class Velodicord extends ListenerAdapter {
                 case "CONNECT" -> {
                     if (proxy.getAllPlayers().stream().noneMatch(player -> player.getUsername().equals(data[2]))) {
                         TabListEntry tabListEntry = TabListEntry.builder()
-                                .displayName((Component) text()
+                                .displayName(text()
                                         .append(text("[" + data[1] + "]", DARK_GREEN))
                                         .append(text("[bot]", DARK_BLUE))
                                         .append(text(data[2]))
+                                        .build()
                                 )
                                 .build();
                         proxy.getAllPlayers().forEach(player ->
@@ -327,20 +329,16 @@ public class Velodicord extends ListenerAdapter {
                         .setColor(Color.red)
                         .build()).queue();
 
-                case "ADVANCEMENT" -> {
-                    textChannel.sendMessage(new EmbedBuilder()
-                            .setTitle("["+data[2]+"]は"+data[1]+"で["+data[3]+"]を達成しました")
-                            .setDescription(data[4])
-                            .setColor(Color.green)
-                            .build()).queue();
-                }
+                case "ADVANCEMENT" -> textChannel.sendMessage(new EmbedBuilder()
+                        .setTitle("["+data[2]+"]は"+data[1]+"で["+data[3]+"]を達成しました")
+                        .setDescription(data[4])
+                        .setColor(Color.green)
+                        .build()).queue();
 
-                case "COMMAND" -> {
-                    textChannel.sendMessage(new EmbedBuilder()
-                            .setTitle("["+data[2]+"]が"+data[1]+"で["+data[3]+"]を実行しました")
-                            .setColor(Color.yellow)
-                            .build()).queue();
-                }
+                case "COMMAND" -> textChannel.sendMessage(new EmbedBuilder()
+                        .setTitle("["+data[2]+"]が"+data[1]+"で["+data[3]+"]を実行しました")
+                        .setColor(Color.yellow)
+                        .build()).queue();
             }
         });
     }
