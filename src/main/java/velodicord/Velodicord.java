@@ -33,19 +33,22 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 
+import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
 import java.awt.*;
 import java.io.File;
@@ -53,6 +56,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -76,7 +80,7 @@ public class Velodicord extends ListenerAdapter {
     @Getter
     private static YamlDocument config;
 
-    private static final Map<String, UUID> bots = new HashMap<>();
+    private static final Map<String,Map<String, UUID>> bots = new HashMap<>();
 
     private static JDA jda;
 
@@ -296,7 +300,11 @@ public class Velodicord extends ListenerAdapter {
                         proxy.getAllPlayers().forEach(player ->
                                 player.getTabList().addEntry(tabListEntry)
                         );
-                        bots.put(data[2], tabListEntry.getProfile().getId());
+                        bots.put(data[2], new HashMap<String, UUID>(){
+                            {
+                                put(data[1], tabListEntry.getProfile().getId());
+                            };
+                        });
                         proxy.sendMessage(text()
                                 .append(text("["+data[2]+"(bot)]", AQUA))
                                 .append(text("が", YELLOW))
@@ -311,7 +319,7 @@ public class Velodicord extends ListenerAdapter {
                 }
 
                 case "DISCONNECT" -> {
-                    proxy.getAllPlayers().forEach(player -> player.getTabList().removeEntry(bots.get(data[2])));
+                    proxy.getAllPlayers().forEach(player -> player.getTabList().removeEntry(bots.get(data[2]).values().stream().findFirst().get()));
                     proxy.sendMessage(text()
                             .append(text("["+data[2]+"(bot)]", AQUA))
                             .append(text("が退出しました", YELLOW))
@@ -341,6 +349,36 @@ public class Velodicord extends ListenerAdapter {
                         .build()).queue();
             }
         });
+
+        jda.upsertCommand("player", "現在サーバーに入ってるプレイヤー一覧").queue();
     }
 
+    @Override
+    public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
+        if (!event.getAuthor().isBot()) {
+            String japanese;
+            proxy.sendMessage(text()
+                    .append(text("[discord]", DARK_GREEN))
+                    .append(text("<"+event.getAuthor().getName()+"> "))
+                    .append(text(event.getMessage().getContentDisplay()))
+                    .append(text(!(japanese=Japanizer.japanize(event.getMessage().getContentDisplay())).isEmpty()?"("+japanese+")":"", GOLD))
+            );
+        }
+    }
+
+    @Override
+    public void onSlashCommand(@NotNull SlashCommandEvent event) {
+        String command = event.getName();
+        if ("player".equals(command)){
+            StringBuilder players = new StringBuilder();
+            proxy.getAllPlayers().forEach(player -> players.append("[").append(player.getCurrentServer()).append("]").append(player.getUsername()));
+            bots.keySet().forEach(player -> bots.get(player).keySet().forEach(server -> players.append("[").append(server).append("][bot]").append(player)));
+            textChannel.sendMessage(new EmbedBuilder()
+                    .setTitle("現在参加しているプレーヤー一覧")
+                    .setDescription(players.toString())
+                    .setColor(Color.blue)
+                    .build()
+            ).queue();
+        }
+    }
 }
