@@ -370,8 +370,8 @@ public class Velodicord extends ListenerAdapter {
         String command = event.getName();
         if ("player".equals(command)){
             StringBuilder players = new StringBuilder();
-            proxy.getAllPlayers().forEach(player -> players.append("[").append(player.getCurrentServer()).append("]").append(player.getUsername()));
-            bots.keySet().forEach(player -> bots.get(player).keySet().forEach(server -> players.append("[").append(server).append("][bot]").append(player)));
+            proxy.getAllPlayers().forEach(player -> players.append("[").append(player.getCurrentServer()).append("]").append(player.getUsername()).append("\n"));
+            bots.keySet().forEach(player -> bots.get(player).keySet().forEach(server -> players.append("[").append(server).append("][bot]").append(player).append("\n")));
             textChannel.sendMessage(new EmbedBuilder()
                     .setTitle("現在参加しているプレーヤー一覧")
                     .setDescription(players.toString())
