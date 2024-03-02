@@ -1,0 +1,6 @@
+#この数字は変えないでください
+file-version: 1
+#discordのbot token
+BotToken: 123456
+#メッセージを送るdiscordのチャンネルID
+ChannelId: 123456
