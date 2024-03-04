@@ -6,18 +6,18 @@
 ## 使い方
 1. discord botを作る
    - 必要なパーミッション
-    - Bot
-     - Privileged Gateway Intents
-      - PRESENCE INTENT
-      - SERVER MEMBERS INTENT
-      - MESSAGE CONTENT INTENT
-    - OAuth2
-     - OAuth2 URL Generator
-      - SCOPES
-       - applications.commands
-       - bot
-      - BOT PERMISSIONS
-       - Administer
+     - Bot
+       - Privileged Gateway Intents
+       - PRESENCE INTENT
+       - SERVER MEMBERS INTENT
+       - MESSAGE CONTENT INTENT
+     - OAuth2
+       - OAuth2 URL Generator
+         - SCOPES
+           - applications.commands
+           - bot
+         - BOT PERMISSIONS
+           - Administer
 1. velocityサーバーのpluginsフォルダにこのプラグインを入れて再起動
 1. plugins/Velodicord/config.yamlを編集
 1. 楽しみましょう!
