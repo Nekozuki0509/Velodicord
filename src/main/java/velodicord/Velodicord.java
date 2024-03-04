@@ -4,16 +4,16 @@ import com.github.ucchyocean.lc3.japanize.Japanizer;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
+import com.velocitypowered.api.command.CommandManager;
+import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
-import com.velocitypowered.api.event.proxy.ListenerBoundEvent;
 import com.velocitypowered.api.event.proxy.ListenerCloseEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
-import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
@@ -33,7 +33,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -54,7 +53,6 @@ import javax.security.auth.login.LoginException;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,7 +61,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.velocitypowered.api.event.player.PlayerChatEvent.ChatResult.denied;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -74,16 +71,12 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 )
 public class Velodicord extends ListenerAdapter {
 
-    @Getter
     private final Logger logger;
 
     @Getter
-    private final ProxyServer proxy;
+    final ProxyServer proxy;
 
-    @Getter
     private static YamlDocument config;
-
-    private static final Map<String,Map<String, UUID>> bots = new HashMap<>();
 
     private static JDA jda;
 
@@ -96,18 +89,22 @@ public class Velodicord extends ListenerAdapter {
     @DataDirectory
     Path dataDirectory;
 
+    static Velodicord velodicord;
+
+    private Map<String, String> players = new HashMap<>();
 
     @Inject
     public Velodicord(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
         this.proxy = proxy;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
+        velodicord = this;
 
         logger.info("Velodicord loaded");
     }
 
     @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent proxyInitializeEvent) {
+    public void onProxyInitialization(ProxyInitializeEvent proxyInitializeEvent) throws InterruptedException {
         if (Files.notExists(dataDirectory))
             try {
                 Files.createDirectory(dataDirectory);
@@ -145,10 +142,9 @@ public class Velodicord extends ListenerAdapter {
         }
 
         proxy.getChannelRegistrar().register(MinecraftChannelIdentifier.create("velocity", "fabdicord"));
-    }
 
-    @Override
-    public void onReady(@Nonnull ReadyEvent readyEvent) {
+        jda.awaitReady();
+
         textChannel = jda.getTextChannelById(config.getString(Route.from("ChannelId")));
         if (textChannel == null) {
             throw new NullPointerException("チャンネルIDが不正です");
@@ -165,35 +161,34 @@ public class Velodicord extends ListenerAdapter {
 
         textChannel.sendMessage("✅velocityサーバーが起動しました").queue();
 
-        proxy.getEventManager().register(this, ListenerCloseEvent.class, PostOrder.FIRST, event ->
-                textChannel.sendMessage("❌velocityサーバーが停止しました").queue()
-        );
-
-        proxy.getEventManager().register(this, ProxyShutdownEvent.class, PostOrder.LAST, event ->
-                jda.shutdownNow()
-        );
+        proxy.getEventManager().register(this, ListenerCloseEvent.class, PostOrder.FIRST, event -> {
+            textChannel.sendMessage("❌velocityサーバーが停止しました").queue();
+            jda.shutdown();
+        });
 
         proxy.getEventManager().register(this, DisconnectEvent.class, PostOrder.FIRST, event -> {
-            Player player = event.getPlayer();
+            String player = event.getPlayer().getUsername();
             proxy.sendMessage(text()
-                    .append(text("["+player.getUsername()+"]", AQUA))
+                    .append(text("["+player+"]", AQUA))
                     .append(text("が退出しました", YELLOW))
             );
             textChannel.sendMessage(new EmbedBuilder()
-                    .setTitle("["+player.getUsername()+"]が退出しました")
+                    .setTitle("退出しました")
                     .setColor(Color.blue)
-                    .setThumbnail("https://mc-heads.net/avatar/"+player.getUsername()+".png")
+                    .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                     .build()).queue();
+            players.remove(player);
+            tabrefresh();
         });
 
         proxy.getEventManager().register(this, ServerConnectedEvent.class, event -> {
-            Player player = event.getPlayer();
+            String player = event.getPlayer().getUsername();
             String targetServer = event.getServer().getServerInfo().getName();
 
             event.getPreviousServer().ifPresentOrElse(
                     server -> {
                         proxy.sendMessage(text()
-                                .append(text("["+player.getUsername()+"]", AQUA))
+                                .append(text("["+player+"]", AQUA))
                                 .append(text("が", YELLOW))
                                 .append(text("["+server.getServerInfo().getName()+"]", DARK_GREEN))
                                 .append(text("から", YELLOW))
@@ -201,31 +196,27 @@ public class Velodicord extends ListenerAdapter {
                                 .append(text("へ移動しました", YELLOW))
                         );
                         textChannel.sendMessage(new EmbedBuilder()
-                                .setTitle("["+player.getUsername()+"]が["+server.getServerInfo().getName()+"]から["+targetServer+"]へ移動しました")
+                                .setTitle("["+server.getServerInfo().getName()+"]から["+targetServer+"]へ移動しました")
                                 .setColor(Color.blue)
-                                .setThumbnail("https://mc-heads.net/avatar/"+player.getUsername()+".png")
+                                .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                                 .build()).queue();
                     },
                     () -> {
                         proxy.sendMessage(text()
-                                .append(text("["+player.getUsername()+"]", AQUA))
-                                .append(text("が入室しました", YELLOW))
+                                .append(text("["+player+"]", AQUA))
+                                .append(text("が", YELLOW))
+                                .append(text("["+targetServer+"]", DARK_GREEN))
+                                .append(text("に入室しました", YELLOW))
                         );
                         textChannel.sendMessage(new EmbedBuilder()
-                                .setTitle("["+player.getUsername()+"]が入室しました")
+                                .setTitle("["+targetServer+"]に入室しました")
                                 .setColor(Color.blue)
-                                .setThumbnail("https://mc-heads.net/avatar/"+player.getUsername()+".png")
+                                .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                                 .build()).queue();
                     }
             );
-
-            proxy.getAllPlayers().forEach(player1 ->
-                    player1.getTabList().getEntry(player.getUniqueId()).get().setDisplayName(text()
-                            .append(text("["+targetServer+"]", DARK_GREEN))
-                            .append(text(player.getUsername()))
-                            .build()
-                    )
-            );
+            players.put(player, targetServer);
+            tabrefresh();
         });
 
         proxy.getEventManager().register(this, PlayerChatEvent.class, PostOrder.FIRST, event -> {
@@ -291,111 +282,123 @@ public class Velodicord extends ListenerAdapter {
                 }
             });
             executor.shutdown();
-
-            event.setResult(denied());
         });
 
         proxy.getEventManager().register(this, PluginMessageEvent.class, event -> {
             if (!event.getIdentifier().equals(MinecraftChannelIdentifier.create("velocity", "fabdicord"))) return;
-            //(dis)connect type:server:player
-            //death type:server:player:dim:x:y:z:message
-            //advancement type:server:player:title:description
-            //command type:server:player:command
             String[] data = new String(event.getData(), StandardCharsets.UTF_8).split(":");
             switch (data[0]) {
-                case "CONNECT" -> {
-                    if (proxy.getAllPlayers().stream().noneMatch(player -> player.getUsername().equals(data[2]))) {
-                        TabListEntry tabListEntry = TabListEntry.builder()
-                                .displayName(text()
-                                        .append(text("[" + data[1] + "]", DARK_GREEN))
-                                        .append(text("[bot]", DARK_BLUE))
-                                        .append(text(data[2]))
-                                        .build()
-                                )
-                                .build();
-                        proxy.getAllPlayers().forEach(player ->
-                                player.getTabList().addEntry(tabListEntry)
-                        );
-                        bots.put(data[2], new HashMap<>() {
-                            {
-                                put(data[1], tabListEntry.getProfile().getId());
-                            }
-                        });
-                        proxy.sendMessage(text()
-                                .append(text("["+data[2]+"(bot)]", AQUA))
-                                .append(text("が", YELLOW))
-                                .append(text(data[1], DARK_GREEN))
-                                .append(text("に入室しました", YELLOW))
-                        );
-                        textChannel.sendMessage(new EmbedBuilder()
-                                .setTitle("["+data[2]+"(bot)]が"+data[1]+"入室しました")
-                                .setColor(Color.blue)
-                                .build()).queue();
-                    }
-                }
-
-                case "DISCONNECT" -> {
-                    proxy.getAllPlayers().forEach(player -> player.getTabList().removeEntry(bots.get(data[2]).values().stream().findFirst().get()));
-                    proxy.sendMessage(text()
-                            .append(text("["+data[2]+"(bot)]", AQUA))
-                            .append(text("が退出しました", YELLOW))
-                    );
-                    bots.remove(data[2]);
-                    textChannel.sendMessage(new EmbedBuilder()
-                            .setTitle("["+data[2]+"(bot)]が退出しました")
-                            .setColor(Color.blue)
-                            .build()).queue();
-                }
-
+                //death type:server:player:dim:xyz:message
                 case "DEATH" -> textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle("["+data[2]+"]が["+data[1]+"]の["+data[3]+"(x:"+data[4]+", y:"+data[5]+", z:"+data[6]+"]で死亡しました")
-                        .setDescription(data[7])
+                        .setTitle("["+data[1]+"]の["+data[3]+data[4]+"]で死亡しました")
+                        .setDescription(data[5])
                         .setColor(Color.red)
+                        .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
                         .build()).queue();
 
+                //advancement type:server:player:title:description
                 case "ADVANCEMENT" -> textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle("["+data[2]+"]は["+data[1]+"]で["+data[3]+"]を達成しました")
+                        .setTitle("["+data[1]+"]で["+data[3]+"]を達成しました")
                         .setDescription(data[4])
                         .setColor(Color.green)
+                        .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
                         .build()).queue();
 
+                //command type:server:player:command
                 case "COMMAND" -> textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle("["+data[2]+"]が["+data[1]+"]で["+data[3]+"]を実行しました")
+                        .setTitle("["+data[1]+"]で["+data[3]+"]を実行しました")
                         .setColor(Color.yellow)
+                        .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
                         .build()).queue();
+
+                //pos type:server:player:dim:xyz
+                case "POS" -> {
+                        proxy.sendMessage(text()
+                                .append(text("<"+data[2]+"> ", BLUE))
+                                .append(text("POS:[", GOLD))
+                                .append(text("["+data[1]+"]", DARK_GREEN))
+                                .append(text(data[3], GREEN))
+                                .append(text(data[4], AQUA))
+                                .append(text("]", GOLD))
+                                .build());
+                        textChannel.sendMessage(new EmbedBuilder()
+                                .setTitle("POS:[["+data[1]+"]"+data[3]+data[4]+"]")
+                                .setColor(Color.cyan)
+                                .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
+                                .build()).queue();
+                }
             }
         });
 
-        jda.upsertCommand("player", "現在サーバーに入ってるプレイヤー一覧").queue();
+        jda.upsertCommand("player", "現在参加しているプレイヤー").queue();
+
+        String[] serverNames = proxy.getAllServers().stream().map(server -> server.getServerInfo().getName()).toArray(String[]::new);
+        CommandManager commandManager = proxy.getCommandManager();
+        CommandMeta server = commandManager.metaBuilder(serverNames[0]).aliases(serverNames).plugin(this).build();
+        CommandMeta playerlist = commandManager.metaBuilder("playerlist").plugin(this).build();
+        commandManager.register(server, new ServerCommand());
+        commandManager.register(playerlist, new PlayerlistCommand());
     }
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if (!event.getAuthor().isBot()) {
-            String japanese;
+        if (!event.getAuthor().isBot() && event.getChannel().getId().equals(textChannel.getId())) {
+            String message = event.getMessage().getContentDisplay();
+            String japanese = Japanizer.japanize(japanese=message).isEmpty()?"("+japanese+")":"";
             proxy.sendMessage(text()
                     .append(text("[discord]", DARK_GREEN))
                     .append(text("<"+event.getAuthor().getName()+"> "))
-                    .append(text(event.getMessage().getContentDisplay()))
-                    .append(text(!(japanese=Japanizer.japanize(event.getMessage().getContentDisplay())).isEmpty()?"("+japanese+")":"", GOLD))
+                    .append(text(message))
+                    .append(text(japanese, GOLD))
             );
+            event.getMessage().editMessage(message+japanese).queue();
         }
     }
 
     @Override
     public void onSlashCommand(@NotNull SlashCommandEvent event) {
-        if ("player".equals(event.getName())){
+        if ("player".equals(event.getName()) && event.getChannel().getId().equals(textChannel.getId())){
+            event.reply("現在参加しているプレーヤー").queue();
             StringBuilder players = new StringBuilder();
             proxy.getAllPlayers().forEach(player -> players.append("・[").append(player.getCurrentServer().get().getServerInfo().getName()).append("]").append(player.getUsername()).append("\n"));
-            bots.keySet().forEach(player -> bots.get(player).keySet().forEach(server -> players.append("[").append(server).append("][bot]").append(player).append("\n")));
-            textChannel.sendMessage(new EmbedBuilder()
-                    .setTitle("現在参加しているプレーヤー一覧")
+            event.getChannel().sendMessage(new EmbedBuilder()
                     .setDescription(players.toString())
                     .setColor(Color.blue)
                     .build()
             ).queue();
             return;
         }
-        event.reply("不明なコマンドです").setEphemeral(false).queue();
+        event.reply("不明なコマンド・チャンネルです").setEphemeral(false).queue();
+    }
+
+    public void tabrefresh() {
+        for (Player player : this.proxy.getAllPlayers()) {
+            for (Player player1 : this.proxy.getAllPlayers()) {
+                if (!player.getTabList().containsEntry(player1.getUniqueId())) {
+                    player.getTabList().addEntry(
+                            TabListEntry.builder()
+                                    .displayName(text()
+                                            .append(text("["+players.get(player1.getUsername())+"]", DARK_GREEN))
+                                            .append(text(player1.getUsername()))
+                                            .build()
+                                    )
+                                    .profile(player1.getGameProfile())
+                                    .gameMode(0)
+                                    .tabList(player.getTabList())
+                                    .build()
+                    );
+                }
+            }
+
+            for (TabListEntry entry : player.getTabList().getEntries()) {
+                UUID uuid = entry.getProfile().getId();
+                Optional<Player> playerOptional = proxy.getPlayer(uuid);
+                if (playerOptional.isPresent()) {
+                    entry.setLatency((int) player.getPing() * 1000);
+                } else {
+                    player.getTabList().removeEntry(uuid);
+                }
+            }
+        }
     }
 }
