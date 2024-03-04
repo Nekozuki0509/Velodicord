@@ -344,14 +344,14 @@ public class Velodicord extends ListenerAdapter {
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         if (!event.getAuthor().isBot() && event.getChannel().getId().equals(textChannel.getId())) {
             String message = event.getMessage().getContentDisplay();
-            String japanese = Japanizer.japanize(japanese=message).isEmpty()?"("+japanese+")":"";
+            String japanese = !(japanese=Japanizer.japanize(message)).isEmpty()?"("+japanese+")":"";
             proxy.sendMessage(text()
                     .append(text("[discord]", DARK_GREEN))
                     .append(text("<"+event.getAuthor().getName()+"> "))
                     .append(text(message))
                     .append(text(japanese, GOLD))
             );
-            event.getMessage().editMessage(message+japanese).queue();
+            textChannel.sendMessage(japanese).queue();
         }
     }
 
