@@ -14,6 +14,7 @@ import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.event.proxy.ListenerCloseEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
@@ -161,10 +162,10 @@ public class Velodicord extends ListenerAdapter {
 
         textChannel.sendMessage("✅velocityサーバーが起動しました").queue();
 
-        proxy.getEventManager().register(this, ListenerCloseEvent.class, PostOrder.FIRST, event -> {
-            textChannel.sendMessage("❌velocityサーバーが停止しました").queue();
-            jda.shutdown();
-        });
+        proxy.getEventManager().register(this, ListenerCloseEvent.class, PostOrder.FIRST, event ->
+                textChannel.sendMessage("❌velocityサーバーが停止しました").queue());
+
+        proxy.getEventManager().register(this, ProxyShutdownEvent.class, PostOrder.LAST, event -> jda.shutdown());
 
         proxy.getEventManager().register(this, DisconnectEvent.class, PostOrder.FIRST, event -> {
             String player = event.getPlayer().getUsername();
