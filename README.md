@@ -30,4 +30,4 @@ BotToken: 123456
 #メッセージを送るdiscordのチャンネルID
 ChannelId: 123456
 ```
-## [modrinth](https://modrinth.com/project/velodicord)で公開しています(現在申請中)
+## [modrinth](https://modrinth.com/project/velodicord)で公開しています
