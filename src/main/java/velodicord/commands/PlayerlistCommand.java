@@ -1,9 +1,10 @@
-package velodicord;
+package velodicord.commands;
 
 import com.velocitypowered.api.command.RawCommand;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
+import velodicord.Velodicord;
 
 import java.awt.*;
 
@@ -22,7 +23,6 @@ public class PlayerlistCommand implements RawCommand {
                     .append(text("["+player.getCurrentServer().get().getServerInfo().getName()+"]", DARK_GREEN))
                     .append(text(player.getUsername()+"\n")));
             Velodicord.velodicord.getProxy().sendMessage(players.build());
-            Velodicord.velodicord.tabrefresh();
         }
     }
 }
