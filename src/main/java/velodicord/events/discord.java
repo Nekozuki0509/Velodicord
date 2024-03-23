@@ -26,7 +26,7 @@ public class discord extends ListenerAdapter {
         if (!event.getAuthor().isBot() && event.getChannel().getId().equals(textChannel.getId())) {
             String message = event.getMessage().getContentDisplay();
             String japanese;
-            if (!(japanese=(!(japanese=Japanizer.japanize(message)).isEmpty()?"("+japanese+")":"")).isEmpty()) textChannel.sendMessage(message+japanese).queue();
+            if (!(japanese=(!(japanese=Japanizer.japanize(message)).isEmpty()?"("+japanese+")":"")).isEmpty() && (!message.contains("https://") || !message.contains("```"))) textChannel.sendMessage(message+japanese).queue();
             String cutmessage = message;
             for (String word : velodicord.dic.keySet()) {
                 cutmessage = cutmessage.replace(word, velodicord.dic.get(word));
