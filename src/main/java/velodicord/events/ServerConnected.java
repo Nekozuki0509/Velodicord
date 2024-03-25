@@ -45,7 +45,11 @@ public class ServerConnected {
                             .setColor(Color.blue)
                             .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                             .build()).queue();
-                    discordbot.sendvoicemessage(player+"が"+targetServer+"に入室しました");
+                    String message = player+"が"+targetServer+"に入室しました";
+                    for (String word : velodicord.dic.keySet()) {
+                        message = message.replace(word, velodicord.dic.get(word));
+                    }
+                    discordbot.sendvoicemessage(message);
                 }
         );
     }

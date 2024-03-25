@@ -28,6 +28,10 @@ public class Disconnect {
                 .setColor(Color.blue)
                 .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                 .build()).queue();
-        discordbot.sendvoicemessage(player+"がマイクラサーバーから退出しました");
+        String message = player+"がマイクラサーバーから退出しました";
+        for (String word : velodicord.dic.keySet()) {
+            message = message.replace(word, velodicord.dic.get(word));
+        }
+        discordbot.sendvoicemessage(message);
     }
 }

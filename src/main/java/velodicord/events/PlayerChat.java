@@ -81,7 +81,7 @@ public class PlayerChat {
         }
         component.append(MiniMessage.miniMessage().deserialize(message));
         discord = "[" + server + "] " + discord;
-        if (!japanese.isEmpty() || !event.getMessage().contains("https://") || !event.getMessage().contains("```")) {
+        if (!japanese.isEmpty() && !event.getMessage().contains("https://") && !event.getMessage().contains("```")) {
             component.append(text("(" + japanese + ")", GOLD));
             discord += "(" + japanese + ")";
         }
