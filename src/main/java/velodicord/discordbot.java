@@ -1,6 +1,5 @@
 package velodicord;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Webhook;
@@ -12,13 +11,6 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import velodicord.events.discord;
 import velodicord.lavaplayer.PlayerManager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 
