@@ -3,6 +3,7 @@ package velodicord.events;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
+import velodicord.config;
 import velodicord.discordbot;
 
 import java.awt.*;
@@ -27,7 +28,7 @@ public class ServerConnected {
                             .append(text("["+targetServer+"]", DARK_GREEN))
                             .append(text("へ移動しました", YELLOW))
                     );
-                    discordbot.textChannel.sendMessageEmbeds(new EmbedBuilder()
+                    discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
                             .setTitle("["+server.getServerInfo().getName()+"]から["+targetServer+"]へ移動しました")
                             .setColor(Color.blue)
                             .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
@@ -40,14 +41,14 @@ public class ServerConnected {
                             .append(text("["+targetServer+"]", DARK_GREEN))
                             .append(text("に入室しました", YELLOW))
                     );
-                    discordbot.textChannel.sendMessageEmbeds(new EmbedBuilder()
+                    discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
                             .setTitle("["+targetServer+"]に入室しました")
                             .setColor(Color.blue)
                             .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                             .build()).queue();
                     String message = player+"が"+targetServer+"に入室しました";
-                    for (String word : velodicord.dic.keySet()) {
-                        message = message.replace(word, velodicord.dic.get(word));
+                    for (String word : config.dic.keySet()) {
+                        message = message.replace(word, config.dic.get(word));
                     }
                     discordbot.sendvoicemessage(message);
                 }

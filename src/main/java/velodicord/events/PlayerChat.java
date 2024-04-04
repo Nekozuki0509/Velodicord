@@ -14,6 +14,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import velodicord.config;
 import velodicord.discordbot;
 
 import java.util.ArrayList;
@@ -40,8 +41,8 @@ public class PlayerChat {
                 .append(text("["+server+"]", DARK_GREEN))
                 .append(text("<"+player.getUsername()+"> "));
         String cutmessage = message;
-        for (String word : velodicord.dic.keySet()) {
-            cutmessage = cutmessage.replace(word, velodicord.dic.get(word));
+        for (String word : config.dic.keySet()) {
+            cutmessage = cutmessage.replace(word, config.dic.get(word));
         }
         cutmessage = cutmessage.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "ネタバレ");
         message = message.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "<ネタバレ>");
@@ -55,7 +56,7 @@ public class PlayerChat {
         discordbot.sendvoicemessage(cutmessage+cutjapanese);
         String japanese = Japanizer.japanize(message);
         if (message.contains("@")){
-            for (Member member : discordbot.textChannel.getMembers()) {
+            for (Member member : discordbot.MainChannel.getMembers()) {
                 String usernameMention = "@" + member.getUser().getName();
                 String displayNameMention = "@" + member.getEffectiveName();
 
@@ -71,7 +72,7 @@ public class PlayerChat {
                     message = message.replace(nicknameMention, "<blue>"+nicknameMention+"</blue>");
                 }
             }
-            for (Role role : discordbot.textChannel.getGuild().getRoles()) {
+            for (Role role : discordbot.MainChannel.getGuild().getRoles()) {
                 String roleMention = "@" + role.getName();
                 discord = StringUtils.replaceIgnoreCase(discord, roleMention, role.getAsMention());
                 message = message.replace(roleMention, "<blue>"+roleMention+"</blue>");

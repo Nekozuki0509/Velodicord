@@ -4,6 +4,7 @@ import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
+import velodicord.config;
 import velodicord.discordbot;
 
 import java.awt.*;
@@ -23,14 +24,14 @@ public class Disconnect {
                 .append(text("["+player+"]", AQUA))
                 .append(text("が退出しました", YELLOW))
         );
-        discordbot.textChannel.sendMessageEmbeds(new EmbedBuilder()
+        discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
                 .setTitle("退出しました")
                 .setColor(Color.blue)
                 .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                 .build()).queue();
         String message = player+"がマイクラサーバーから退出しました";
-        for (String word : velodicord.dic.keySet()) {
-            message = message.replace(word, velodicord.dic.get(word));
+        for (String word : config.dic.keySet()) {
+            message = message.replace(word, config.dic.get(word));
         }
         discordbot.sendvoicemessage(message);
     }

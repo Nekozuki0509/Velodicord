@@ -22,7 +22,7 @@ public class PluginMessage {
         String[] data = new String(event.getData(), StandardCharsets.UTF_8).split(":");
         switch (data[0]) {
             //death type:server:player:dim:xyz:message
-            case "DEATH" -> discordbot.textChannel.sendMessageEmbeds(new EmbedBuilder()
+            case "DEATH" -> discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
                     .setTitle("["+data[1]+"]の["+data[3]+data[4]+"]で死亡しました")
                     .setDescription(data[5])
                     .setColor(Color.red)
@@ -30,7 +30,7 @@ public class PluginMessage {
                     .build()).queue();
 
             //advancement type:server:player:title:description
-            case "ADVANCEMENT" -> discordbot.textChannel.sendMessageEmbeds(new EmbedBuilder()
+            case "ADVANCEMENT" -> discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
                     .setTitle("["+data[1]+"]で["+data[3]+"]を達成しました")
                     .setDescription(data[4])
                     .setColor(Color.green)
@@ -38,7 +38,7 @@ public class PluginMessage {
                     .build()).queue();
 
             //command type:server:player:command
-            case "COMMAND" -> discordbot.textChannel.sendMessageEmbeds(new EmbedBuilder()
+            case "COMMAND" -> discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
                     .setTitle("["+data[1]+"]で["+data[3]+"]を実行しました")
                     .setColor(Color.yellow)
                     .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
@@ -54,11 +54,35 @@ public class PluginMessage {
                         .append(text(data[4], AQUA))
                         .append(text("]", GOLD))
                         .build());
-                discordbot.textChannel.sendMessageEmbeds(new EmbedBuilder()
+                discordbot.MainChannel.sendMessageEmbeds(new EmbedBuilder()
                         .setTitle("POS:[["+data[1]+"]"+data[3]+data[4]+"]")
                         .setColor(Color.cyan)
                         .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
                         .build()).queue();
+            }
+
+            //npos type:server:player:dim:xyz:name
+            case "NPOS" -> {
+                velodicord.getProxy().sendMessage(text()
+                        .append(text("<"+data[2]+"> ", BLUE))
+                        .append(text(data[5]+":[", GOLD))
+                        .append(text("["+data[1]+"]", DARK_GREEN))
+                        .append(text(data[3], GREEN))
+                        .append(text(data[4], AQUA))
+                        .append(text("]", GOLD))
+                        .build());
+                discordbot.MainChannel.sendMessageEmbeds(new EmbedBuilder()
+                        .setTitle(data[5]+":[["+data[1]+"]"+data[3]+data[4]+"]")
+                        .setColor(Color.cyan)
+                        .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
+                        .build()).queue();
+                if (discordbot.PosChannel != null) {
+                    discordbot.PosChannel.sendMessageEmbeds(new EmbedBuilder()
+                            .setTitle(data[5]+":[["+data[1]+"]"+data[3]+data[4]+"]")
+                            .setColor(Color.cyan)
+                            .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
+                            .build()).queue();
+                }
             }
         }
     }
