@@ -151,6 +151,14 @@ public class discord extends ListenerAdapter {
             }
 
             case "leave" -> {
+                if (!event.getChannel().getId().equals(MainChannel.getId())) {
+                    event.replyEmbeds(new EmbedBuilder()
+                            .setColor(Color.red)
+                            .setTitle("不明なチャンネルです")
+                            .build()
+                    ).setEphemeral(true).queue();
+                    return;
+                }
                 if (voicechannel != null) {
                     event.getGuild().getAudioManager().closeAudioConnection();
                     event.replyEmbeds(new EmbedBuilder()
@@ -169,6 +177,14 @@ public class discord extends ListenerAdapter {
             }
 
             case "player" -> {
+                if (!event.getChannel().getId().equals(MainChannel.getId())) {
+                    event.replyEmbeds(new EmbedBuilder()
+                            .setColor(Color.red)
+                            .setTitle("不明なチャンネルです")
+                            .build()
+                    ).setEphemeral(true).queue();
+                    return;
+                }
                 StringBuilder players = new StringBuilder();
                 velodicord.getProxy().getAllPlayers().forEach(player -> players.append("・[").append(player.getCurrentServer().get().getServerInfo().getName()).append("]").append(player.getUsername()).append("\n"));
                 event.replyEmbeds(new EmbedBuilder()
@@ -180,6 +196,14 @@ public class discord extends ListenerAdapter {
             }
 
             case "showdic" -> {
+                if (!event.getChannel().getId().equals(MainChannel.getId())) {
+                    event.replyEmbeds(new EmbedBuilder()
+                            .setColor(Color.red)
+                            .setTitle("不明なチャンネルです")
+                            .build()
+                    ).setEphemeral(true).queue();
+                    return;
+                }
                 StringBuilder builder = new StringBuilder();
                 config.dic.keySet().forEach(word -> builder.append("・ ").append(word).append(" -> ").append(config.dic.get(word)).append("\n"));
                 event.replyEmbeds(new EmbedBuilder()
@@ -191,6 +215,14 @@ public class discord extends ListenerAdapter {
             }
 
             case "adddic" -> {
+                if (!event.getChannel().getId().equals(MainChannel.getId())) {
+                    event.replyEmbeds(new EmbedBuilder()
+                            .setColor(Color.red)
+                            .setTitle("不明なチャンネルです")
+                            .build()
+                    ).setEphemeral(true).queue();
+                    return;
+                }
                 String word = event.getOptions().get(0).getAsString();
                 String read = event.getOptions().get(1).getAsString();
                 config.dic.put(word, read);
@@ -203,6 +235,14 @@ public class discord extends ListenerAdapter {
             }
 
             case "removedic" -> {
+                if (!event.getChannel().getId().equals(MainChannel.getId())) {
+                    event.replyEmbeds(new EmbedBuilder()
+                            .setColor(Color.red)
+                            .setTitle("不明なチャンネルです")
+                            .build()
+                    ).setEphemeral(true).queue();
+                    return;
+                }
                 String word = event.getOptions().get(0).getAsString();
                 config.dic.remove(word);
                 event.replyEmbeds(new EmbedBuilder()

@@ -14,6 +14,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
 
 import static velodicord.Velodicord.velodicord;
+import static velodicord.discordbot.MainChannel;
 
 public class PluginMessage {
     @Subscribe
@@ -54,7 +55,7 @@ public class PluginMessage {
                         .append(text(data[4], AQUA))
                         .append(text("]", GOLD))
                         .build());
-                discordbot.MainChannel.sendMessageEmbeds(new EmbedBuilder()
+                MainChannel.sendMessageEmbeds(new EmbedBuilder()
                         .setTitle("POS:[["+data[1]+"]"+data[3]+data[4]+"]")
                         .setColor(Color.cyan)
                         .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
@@ -71,12 +72,12 @@ public class PluginMessage {
                         .append(text(data[4], AQUA))
                         .append(text("]", GOLD))
                         .build());
-                discordbot.MainChannel.sendMessageEmbeds(new EmbedBuilder()
+                MainChannel.sendMessageEmbeds(new EmbedBuilder()
                         .setTitle(data[5]+":[["+data[1]+"]"+data[3]+data[4]+"]")
                         .setColor(Color.cyan)
                         .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
                         .build()).queue();
-                if (discordbot.PosChannel != null) {
+                if (!discordbot.PosChannel.getId().equals(MainChannel.getId())) {
                     discordbot.PosChannel.sendMessageEmbeds(new EmbedBuilder()
                             .setTitle(data[5]+":[["+data[1]+"]"+data[3]+data[4]+"]")
                             .setColor(Color.cyan)

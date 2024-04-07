@@ -43,6 +43,7 @@ public class Velodicord {
         this.logger = logger;
         config.dataDirectory = dataDirectory;
         config.dicjson = dataDirectory.resolve("dic.json");
+        config.config = dataDirectory.resolve("config.properties");
         velodicord = this;
 
         logger.info("Velodicord loaded");

@@ -1,5 +1,6 @@
 package velodicord;
 
+import V4S4J.V4S4J.V4S4J;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Webhook;
@@ -67,7 +68,8 @@ public class discordbot {
     public static void sendvoicemessage(String message) {
         if (voicechannel == null) return;
 
-        VoiceVox.tts(message);
-        PlayerManager.getInstance().loadAndPlay(MainChannel, "./result.wav");
+        if (V4S4J.tts(message)) {
+            PlayerManager.getInstance().loadAndPlay(MainChannel, "./result.wav");
+        }
     }
 }
