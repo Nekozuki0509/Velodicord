@@ -114,6 +114,7 @@ public class discord extends ListenerAdapter {
 
             case "setlog" -> {
                 LogChannel = event.getOptions().get(0).getAsChannel().asTextChannel();
+                config.config.put("LogChannelID", LogChannel.getId());
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("ログチャンネルを" + LogChannel.getName() + "(" + LogChannel.getId() + ")に設定しました")
                         .setColor(Color.blue)
@@ -123,6 +124,7 @@ public class discord extends ListenerAdapter {
 
             case "setpos" -> {
                 PosChannel = event.getOptions().get(0).getAsChannel().asTextChannel();
+                config.config.put("PosChannelID", PosChannel.getId());
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("POSチャンネルを" + PosChannel.getName() + "(" + PosChannel.getId() + ")に設定しました")
                         .setColor(Color.blue)
