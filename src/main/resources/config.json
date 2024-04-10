@@ -1,14 +1,14 @@
 {
-  "_comment_" : "この値は変更しないでください",
+  "_fcomment_" : "この値は変更しないでください",
   "file-version" : "1",
-  "_comment_" : "discordbotのtoken",
+  "_bcomment_" : "discordbotのtoken",
   "BotToken" : "123456",
-  "_comment_" : "discordのメインチャンネルID",
+  "_mcomment_" : "discordのメインチャンネルID",
   "MainChannelID" : "123456",
-  "_comment_" : "discordの入退出などの通知チャンネルID(オプション)",
+  "_lcomment_" : "discordの入退出などの通知チャンネルID(オプション)",
   "LogChannelID" : "000000",
-  "_comment_" : "discordのPOSチャンネルID(オプション)",
+  "_pcomment_" : "discordのPOSチャンネルID(オプション)",
   "PosChannelID" : "000000",
-  "_comment_" : "VOICEVOXのタイプ CPU : 1 DirectML : 2 CUDA : 3",
+  "_vcomment_" : "VOICEVOXのタイプ CPU : 1 DirectML : 2 CUDA : 3",
   "VOICEVOX-type" : "1"
 }
