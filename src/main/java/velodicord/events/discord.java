@@ -96,6 +96,15 @@ public class discord extends ListenerAdapter {
         switch (event.getName()) {
             case "setmain" -> {
                 MainChannel = event.getOptions().get(0).getAsChannel().asTextChannel();
+                config.config.put("MainChannelID", MainChannel.getId());
+                if (MainChannel.getId().equals(LogChannel.getId())) {
+                    LogChannel = MainChannel;
+                    config.config.put("LogChannelID", LogChannel.getId());
+                }
+                if (MainChannel.getId().equals(PosChannel.getId())) {
+                    PosChannel = MainChannel;
+                    config.config.put("PosChannelID", PosChannel.getId());
+                }
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("メインチャンネルを" + MainChannel.getName() + "(" + MainChannel.getId() + ")に設定しました")
                         .setColor(Color.blue)
