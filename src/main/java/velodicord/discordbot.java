@@ -24,7 +24,7 @@ public class discordbot {
     public static String voicechannel;
 
     static void init() throws InterruptedException {
-        jda = JDABuilder.createDefault(config.p.getProperty("BotToken"))
+        jda = JDABuilder.createDefault(config.config.get("BotToken"))
                 .setChunkingFilter(ChunkingFilter.ALL)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
@@ -44,13 +44,19 @@ public class discordbot {
         jda.upsertCommand("removedic", "辞書に登録されている単語の削除")
                 .addOption(OptionType.STRING, "word", "削除したい単語", true)
                 .queue();
-        jda.upsertCommand("setmain", "メインチャンネルを現在いるテキストチャンネルに設定する").queue();
-        jda.upsertCommand("setlog", "ログチャンネルを現在いるテキストチャンネルに設定する").queue();
-        jda.upsertCommand("setpos", "POSチャンネルを現在いるテキストチャンネルに設定する").queue();
+        jda.upsertCommand("setmain", "メインチャンネルを現在いるテキストチャンネルに設定する")
+                .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true)
+                .queue();
+        jda.upsertCommand("setlog", "ログチャンネルを現在いるテキストチャンネルに設定する")
+                .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true)
+                .queue();
+        jda.upsertCommand("setpos", "POSチャンネルを現在いるテキストチャンネルに設定する")
+                .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true)
+                .queue();
 
-        MainChannel = jda.getTextChannelById(config.p.getProperty("MainChannelId"));
-        LogChannel = config.p.getProperty("LogChannelID").equals("000000")?MainChannel:jda.getTextChannelById(config.p.getProperty("LogChannelID"));
-        PosChannel = config.p.getProperty("PosChannelID").equals("000000")?MainChannel:jda.getTextChannelById(config.p.getProperty("PosChannelID"));
+        MainChannel = jda.getTextChannelById(config.config.get("MainChannelID"));
+        LogChannel = config.config.get("LogChannelID").equals("000000")?MainChannel:jda.getTextChannelById(config.config.get("LogChannelID"));
+        PosChannel = config.config.get("PosChannelID").equals("000000")?MainChannel:jda.getTextChannelById(config.config.get("PosChannelID"));
         if (MainChannel == null) {
             throw new NullPointerException("チャンネルIDが不正です");
         }

@@ -84,43 +84,44 @@ public class discord extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (!event.getChannel().getId().equals(MainChannel.getId())) {
+            event.replyEmbeds(new EmbedBuilder()
+                    .setColor(Color.red)
+                    .setTitle("不明なチャンネルです")
+                    .build()
+            ).setEphemeral(true).queue();
+            return;
+        }
+
         switch (event.getName()) {
             case "setmain" -> {
-                MainChannel = event.getChannel().asTextChannel();
+                MainChannel = event.getOptions().get(0).getAsChannel().asTextChannel();
                 event.replyEmbeds(new EmbedBuilder()
-                        .setTitle("メインチャンネルを" + event.getChannel().getName() + "(" + event.getChannel().getId() + ")に設定しました")
+                        .setTitle("メインチャンネルを" + MainChannel.getName() + "(" + MainChannel.getId() + ")に設定しました")
                         .setColor(Color.blue)
                         .build()
                 ).queue();
             }
 
             case "setlog" -> {
-                LogChannel = event.getChannel().asTextChannel();
+                LogChannel = event.getOptions().get(0).getAsChannel().asTextChannel();
                 event.replyEmbeds(new EmbedBuilder()
-                        .setTitle("ログチャンネルを" + event.getChannel().getName() + "(" + event.getChannel().getId() + ")に設定しました")
+                        .setTitle("ログチャンネルを" + LogChannel.getName() + "(" + LogChannel.getId() + ")に設定しました")
                         .setColor(Color.blue)
                         .build()
                 ).queue();
             }
 
             case "setpos" -> {
-                PosChannel = event.getChannel().asTextChannel();
+                PosChannel = event.getOptions().get(0).getAsChannel().asTextChannel();
                 event.replyEmbeds(new EmbedBuilder()
-                        .setTitle("POSチャンネルを" + event.getChannel().getName() + "(" + event.getChannel().getId() + ")に設定しました")
+                        .setTitle("POSチャンネルを" + PosChannel.getName() + "(" + PosChannel.getId() + ")に設定しました")
                         .setColor(Color.blue)
                         .build()
                 ).queue();
             }
 
             case "join" -> {
-                if (!event.getChannel().getId().equals(MainChannel.getId())) {
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setColor(Color.red)
-                            .setTitle("不明なチャンネルです")
-                            .build()
-                    ).setEphemeral(true).queue();
-                    return;
-                }
                 GuildVoiceState voiceState;
                 if (voicechannel != null) {
                     event.replyEmbeds(new EmbedBuilder()
@@ -151,14 +152,6 @@ public class discord extends ListenerAdapter {
             }
 
             case "leave" -> {
-                if (!event.getChannel().getId().equals(MainChannel.getId())) {
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setColor(Color.red)
-                            .setTitle("不明なチャンネルです")
-                            .build()
-                    ).setEphemeral(true).queue();
-                    return;
-                }
                 if (voicechannel != null) {
                     event.getGuild().getAudioManager().closeAudioConnection();
                     event.replyEmbeds(new EmbedBuilder()
@@ -177,14 +170,6 @@ public class discord extends ListenerAdapter {
             }
 
             case "player" -> {
-                if (!event.getChannel().getId().equals(MainChannel.getId())) {
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setColor(Color.red)
-                            .setTitle("不明なチャンネルです")
-                            .build()
-                    ).setEphemeral(true).queue();
-                    return;
-                }
                 StringBuilder players = new StringBuilder();
                 velodicord.getProxy().getAllPlayers().forEach(player -> players.append("・[").append(player.getCurrentServer().get().getServerInfo().getName()).append("]").append(player.getUsername()).append("\n"));
                 event.replyEmbeds(new EmbedBuilder()
@@ -196,14 +181,6 @@ public class discord extends ListenerAdapter {
             }
 
             case "showdic" -> {
-                if (!event.getChannel().getId().equals(MainChannel.getId())) {
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setColor(Color.red)
-                            .setTitle("不明なチャンネルです")
-                            .build()
-                    ).setEphemeral(true).queue();
-                    return;
-                }
                 StringBuilder builder = new StringBuilder();
                 config.dic.keySet().forEach(word -> builder.append("・ ").append(word).append(" -> ").append(config.dic.get(word)).append("\n"));
                 event.replyEmbeds(new EmbedBuilder()
@@ -215,14 +192,6 @@ public class discord extends ListenerAdapter {
             }
 
             case "adddic" -> {
-                if (!event.getChannel().getId().equals(MainChannel.getId())) {
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setColor(Color.red)
-                            .setTitle("不明なチャンネルです")
-                            .build()
-                    ).setEphemeral(true).queue();
-                    return;
-                }
                 String word = event.getOptions().get(0).getAsString();
                 String read = event.getOptions().get(1).getAsString();
                 config.dic.put(word, read);
@@ -235,14 +204,6 @@ public class discord extends ListenerAdapter {
             }
 
             case "removedic" -> {
-                if (!event.getChannel().getId().equals(MainChannel.getId())) {
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setColor(Color.red)
-                            .setTitle("不明なチャンネルです")
-                            .build()
-                    ).setEphemeral(true).queue();
-                    return;
-                }
                 String word = event.getOptions().get(0).getAsString();
                 config.dic.remove(word);
                 event.replyEmbeds(new EmbedBuilder()
