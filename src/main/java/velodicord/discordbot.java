@@ -74,8 +74,8 @@ public class discordbot {
     public static void sendvoicemessage(String message) {
         if (voicechannel == null) return;
 
-        if (V4S4J.tts(message)) {
-            PlayerManager.getInstance().loadAndPlay(MainChannel, "./result.wav");
+        if (V4S4J.tts(message, String.valueOf(config.dataDirectory.resolve("result.wav")))) {
+            PlayerManager.getInstance().loadAndPlay(MainChannel, String.valueOf(config.dataDirectory.resolve("result.wav")));
         }
     }
 }

@@ -7,16 +7,23 @@ import com.velocitypowered.api.event.proxy.ListenerCloseEvent;
 import velodicord.config;
 import velodicord.discordbot;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+
+import static velodicord.config.dic;
+import static velodicord.config.gson;
 
 
 public class ListenerClose {
     @Subscribe(order = PostOrder.FIRST)
     public void onListenerClose(ListenerCloseEvent event) {
-        try {
-            config.mapper.writerWithDefaultPrettyPrinter().writeValue(new File(String.valueOf(config.dicjson)), config.dic);
-            config.mapper.writerWithDefaultPrettyPrinter().writeValue(new File(String.valueOf(config.configjson)), config.config);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(config.dicjson)), StandardCharsets.UTF_8))) {
+            gson.toJson(dic, writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(config.configjson)), StandardCharsets.UTF_8))) {
+            gson.toJson(config.config, writer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

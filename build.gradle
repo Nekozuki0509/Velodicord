@@ -29,9 +29,6 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.14.0'
     implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-beta.21'
     implementation 'dev.arbjerg:lavaplayer:2.1.1'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.17.0-rc1'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.17.0-rc1'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.17.0-rc1'
     implementation files('lib/V4S4J-assembly-0.1.0-SNAPSHOT.jar')
 }
 

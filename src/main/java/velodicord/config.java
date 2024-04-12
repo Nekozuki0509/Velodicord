@@ -1,25 +1,27 @@
 package velodicord;
 
 import V4S4J.V4S4J.V4S4J;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.lang.reflect.Type;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public class config {
 
-    public static final ObjectMapper mapper = new ObjectMapper();
-
     public static Map<String, String> dic;
+
+    public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    public static Type type = new TypeToken<Map<String, String>>() {}.getType();
 
     public static Map<String, String> config;
 
@@ -47,9 +49,12 @@ public class config {
             System.exit(0);
         }
 
-        TypeReference<HashMap<String, String>> reference = new TypeReference<>(){};
-        dic = mapper.readValue(mapper.readTree(new File(String.valueOf(dicjson))).toString(), reference);
-        config = mapper.readValue(mapper.readTree(new File(String.valueOf(configjson))).toString(), reference);
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(dicjson)), StandardCharsets.UTF_8))) {
+            dic = gson.fromJson(reader, type);
+        }
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(configjson)), StandardCharsets.UTF_8))) {
+            config = gson.fromJson(reader, type);
+        }
 
         String rawOsName = System.getProperty("os.name");
         if (Files.notExists(dataDirectory.resolve("voicevox_core"))) {
@@ -86,9 +91,9 @@ public class config {
                 }
                 new ProcessBuilder("chmod", "+x", dataDirectory.resolve("download").toString()).start().waitFor();
                 switch (config.get("VOICEVOX-type")) {
-                    case "2" -> new ProcessBuilder("bash", "-c", "cd " + dataDirectory.toString() + " && download --device directml").directory(dataDirectory.toFile()).start().waitFor();
-                    case "3" -> new ProcessBuilder("bash", "-c", "cd " + dataDirectory.toString() + " && download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
-                    default -> new ProcessBuilder("bash", "-c", "cd " + dataDirectory.toString() + " && download").directory(dataDirectory.toFile()).start().waitFor();
+                    case "2" -> new ProcessBuilder("bash", "-c", "./download --device directml").directory(dataDirectory.toFile()).start().waitFor();
+                    case "3" -> new ProcessBuilder("bash", "-c", "./download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
+                    default -> new ProcessBuilder("bash", "-c", "./download").directory(dataDirectory.toFile()).start().waitFor();
                 }
             }
             Velodicord.velodicord.logger.info("VOICEVOXのライブラリダウンロード完了");
