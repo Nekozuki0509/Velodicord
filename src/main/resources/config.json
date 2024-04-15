@@ -10,5 +10,7 @@
   "_pcomment_" : "discordのPOSチャンネルID(オプション)",
   "PosChannelID" : "000000",
   "_vcomment_" : "VOICEVOXのタイプ CPU : 1 DirectML : 2 CUDA : 3",
-  "VOICEVOX-type" : "1"
+  "VOICEVOX-type" : "1",
+  "_dcomment_" : "デフォルトの読み上げの声のID",
+  "DefaultSpeakerID" : "3"
 }

@@ -1,61 +1,21 @@
 package velodicord;
 
 import V4S4J.V4S4J.V4S4J;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.velocitypowered.api.plugin.annotation.DataDirectory;
 
-import java.io.*;
-import java.lang.reflect.Type;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-public class config {
+import static velodicord.Config.*;
 
-    public static Map<String, String> dic;
-
-    public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-    public static Type type = new TypeToken<Map<String, String>>() {}.getType();
-
-    public static Map<String, String> config;
-
-    @DataDirectory
-    public static Path dataDirectory;
-
-    public static Path dicjson;
-
-    public static Path configjson;
-
+public class VOICEVOX {
+    public static Map<Integer, String> voicevox = new LinkedHashMap<>();
     public static void init() throws IOException, InterruptedException {
-        if (Files.notExists(dataDirectory))
-            try {
-                Files.createDirectory(dataDirectory);
-            } catch (IOException e) {
-                throw new RuntimeException("Velodicordのconfigディレクトリを作れませんでした");
-            }
-
-        if (Files.notExists(dicjson))
-            Files.copy(Objects.requireNonNull(Velodicord.class.getResourceAsStream("/dic.json")), dicjson);
-
-        if (Files.notExists(configjson)) {
-            Files.copy(Objects.requireNonNull(Velodicord.class.getResourceAsStream("/config.json")), configjson);
-            Velodicord.velodicord.logger.info("Velodicordのconfigを設定してください");
-            System.exit(0);
-        }
-
-        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(dicjson)), StandardCharsets.UTF_8))) {
-            dic = gson.fromJson(reader, type);
-        }
-        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(configjson)), StandardCharsets.UTF_8))) {
-            config = gson.fromJson(reader, type);
-        }
-
         String rawOsName = System.getProperty("os.name");
         if (Files.notExists(dataDirectory.resolve("voicevox_core"))) {
             Velodicord.velodicord.logger.info("VOICEVOXのライブラリをダウンロード中");
@@ -66,7 +26,7 @@ public class config {
                     Files.copy(in, dataDirectory.resolve("download.exe"));
                 }
                 new ProcessBuilder("cmd.exe", "/c", "cd /d", dataDirectory.toString()).directory(dataDirectory.toFile()).start().waitFor();
-                switch (config.get("VOICEVOX-type")) {
+                switch (config.get("velodicord.VOICEVOX-type")) {
                     case "2" -> new ProcessBuilder("cmd.exe", "/c", "download --device directml").directory(dataDirectory.toFile()).start().waitFor();
                     case "3" -> new ProcessBuilder("cmd.exe", "/c", "download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
                     default ->  new ProcessBuilder("cmd.exe", "/c", "download").directory(dataDirectory.toFile()).start().waitFor();
@@ -90,7 +50,7 @@ public class config {
                     Files.copy(in, dataDirectory.resolve("download"));
                 }
                 new ProcessBuilder("chmod", "+x", dataDirectory.resolve("download").toString()).start().waitFor();
-                switch (config.get("VOICEVOX-type")) {
+                switch (config.get("velodicord.VOICEVOX-type")) {
                     case "2" -> new ProcessBuilder("bash", "-c", "./download --device directml").directory(dataDirectory.toFile()).start().waitFor();
                     case "3" -> new ProcessBuilder("bash", "-c", "./download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
                     default -> new ProcessBuilder("bash", "-c", "./download").directory(dataDirectory.toFile()).start().waitFor();
@@ -98,6 +58,20 @@ public class config {
             }
             Velodicord.velodicord.logger.info("VOICEVOXのライブラリダウンロード完了");
         }
+
+
+        List<Map<String, Object>> data = gson.fromJson(new FileReader(String.valueOf(dataDirectory.resolve("voicevox_core").resolve("model").resolve("metas.json"))), List.class);
+
+        for (Map<String, Object> speakerData : data) {
+            String botName = (String) speakerData.get("name");
+            List<Map<String, Object>> styles = (List<Map<String, Object>>) speakerData.get("styles");
+            for (Map<String, Object> style : styles) {
+                String combinedName = botName + "(" + style.get("name") + ")";
+                if (!VOICEVOX.voicevox.containsValue(combinedName)) VOICEVOX.voicevox.put(((Number) style.get("id")).intValue(), combinedName);
+            }
+        }
+
+
         V4S4J.init(String.valueOf(dataDirectory.resolve("voicevox_core")), !rawOsName.startsWith("Win"));
     }
 }

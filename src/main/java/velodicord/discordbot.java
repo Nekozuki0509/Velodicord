@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
@@ -24,7 +25,7 @@ public class discordbot {
     public static String voicechannel;
 
     static void init() throws InterruptedException {
-        jda = JDABuilder.createDefault(config.config.get("BotToken"))
+        jda = JDABuilder.createDefault(Config.config.get("BotToken"))
                 .setChunkingFilter(ChunkingFilter.ALL)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
@@ -32,31 +33,38 @@ public class discordbot {
                 .build();
 
         jda.awaitReady();
+        jda.updateCommands().addCommands(
+                Commands.slash("player", "現在参加しているプレイヤー"),
+                Commands.slash("join", "ボイスチャンネルへの参加"),
+                Commands.slash("leave", "ボイスチャンネルからの退出"),
+                Commands.slash("showdic", "辞書に登録されている単語一覧"),
+                Commands.slash("adddic", "辞書に新たな単語を登録・登録されている単語の読み方を変更")
+                        .addOption(OptionType.STRING, "word", "登録したい単語", true)
+                        .addOption(OptionType.STRING, "read", "登録したい単語の読み方", true),
+                Commands.slash("deletedic", "辞書に登録されている単語の削除")
+                        .addOption(OptionType.STRING, "word", "削除したい単語", true),
+                Commands.slash("setmain", "メインチャンネルを現在いるテキストチャンネルに設定する")
+                        .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
+                Commands.slash("setlog", "ログチャンネルを現在いるテキストチャンネルに設定する")
+                        .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
+                Commands.slash("setpos", "POSチャンネルを現在いるテキストチャンネルに設定する")
+                        .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
+                Commands.slash("showchannel", "設定されているチャンネル"),
+                Commands.slash("showdetectbot", "登録されている発言を無視しないbot一覧"),
+                Commands.slash("adddetectbot", "新たに発言を無視しないbotを登録")
+                        .addOption(OptionType.USER, "bot", "登録したいbot", true),
+                Commands.slash("deletedetectbot", "登録されている発言を無視しないbotの削除")
+                        .addOption(OptionType.USER, "bot", "削除したいbot", true),
+                Commands.slash("showspeaker", "読み上げの声の種類とID"),
+                Commands.slash("setspeaker", "読み上げの声を設定")
+                        .addOption(OptionType.INTEGER, "id", "読み上げの声のID", true),
+                Commands.slash("setdefaultspeaker", "デフォルトの読み上げの声を設定")
+                        .addOption(OptionType.INTEGER, "id", "読み上げの声のID", true)
+        ).queue();
 
-        jda.upsertCommand("player", "現在参加しているプレイヤー").queue();
-        jda.upsertCommand("join", "ボイスチャンネルへの参加").queue();
-        jda.upsertCommand("leave", "ボイスチャンネルからの退出").queue();
-        jda.upsertCommand("showdic", "辞書に登録されている単語一覧").queue();
-        jda.upsertCommand("adddic", "辞書に新たな単語を登録・登録されている単語の読み方を変更")
-                .addOption(OptionType.STRING, "word", "登録したい単語", true)
-                .addOption(OptionType.STRING, "read", "登録したい単語の読み方", true)
-                .queue();
-        jda.upsertCommand("removedic", "辞書に登録されている単語の削除")
-                .addOption(OptionType.STRING, "word", "削除したい単語", true)
-                .queue();
-        jda.upsertCommand("setmain", "メインチャンネルを現在いるテキストチャンネルに設定する")
-                .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true)
-                .queue();
-        jda.upsertCommand("setlog", "ログチャンネルを現在いるテキストチャンネルに設定する")
-                .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true)
-                .queue();
-        jda.upsertCommand("setpos", "POSチャンネルを現在いるテキストチャンネルに設定する")
-                .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true)
-                .queue();
-
-        MainChannel = jda.getTextChannelById(config.config.get("MainChannelID"));
-        LogChannel = config.config.get("LogChannelID").equals("000000")?MainChannel:jda.getTextChannelById(config.config.get("LogChannelID"));
-        PosChannel = config.config.get("PosChannelID").equals("000000")?MainChannel:jda.getTextChannelById(config.config.get("PosChannelID"));
+        MainChannel = jda.getTextChannelById(Config.config.get("MainChannelID"));
+        LogChannel = Config.config.get("LogChannelID").equals("000000")?MainChannel:jda.getTextChannelById(Config.config.get("LogChannelID"));
+        PosChannel = Config.config.get("PosChannelID").equals("000000")?MainChannel:jda.getTextChannelById(Config.config.get("PosChannelID"));
         if (MainChannel == null) {
             throw new NullPointerException("チャンネルIDが不正です");
         }
@@ -71,11 +79,11 @@ public class discordbot {
         }
     }
 
-    public static void sendvoicemessage(String message) {
+    public static void sendvoicemessage(String message, int speaker) {
         if (voicechannel == null) return;
-
-        if (V4S4J.tts(message, String.valueOf(config.dataDirectory.resolve("result.wav")))) {
-            PlayerManager.getInstance().loadAndPlay(MainChannel, String.valueOf(config.dataDirectory.resolve("result.wav")));
+        String path = String.valueOf(Config.dataDirectory.resolve("result.wav"));
+        if (V4S4J.tts(message, path, speaker)) {
+            PlayerManager.getInstance().loadAndPlay(MainChannel, path);
         }
     }
 }

@@ -14,7 +14,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import velodicord.config;
+import velodicord.Config;
 import velodicord.discordbot;
 
 import java.util.ArrayList;
@@ -41,8 +41,8 @@ public class PlayerChat {
                 .append(text("["+server+"]", DARK_GREEN))
                 .append(text("<"+player.getUsername()+"> "));
         String cutmessage = message;
-        for (String word : config.dic.keySet()) {
-            cutmessage = cutmessage.replace(word, config.dic.get(word));
+        for (String word : Config.dic.keySet()) {
+            cutmessage = cutmessage.replace(word, Config.dic.get(word));
         }
         cutmessage = cutmessage.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "ネタバレ");
         message = message.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "<ネタバレ>");
@@ -53,7 +53,7 @@ public class PlayerChat {
         }
         cutmessage = cutmessage.replace("@", "アット");
         String cutjapanese = !(cutjapanese=Japanizer.japanize(cutmessage)).isEmpty()?"("+cutjapanese+")":"";
-        discordbot.sendvoicemessage(cutmessage+cutjapanese);
+        discordbot.sendvoicemessage(cutmessage+cutjapanese, Config.minespeaker.getOrDefault(event.getPlayer().getUniqueId().toString(), Integer.parseInt(Config.config.get("DefaultSpeakerID"))));
         String japanese = Japanizer.japanize(message);
         if (message.contains("@")){
             for (Member member : discordbot.MainChannel.getMembers()) {

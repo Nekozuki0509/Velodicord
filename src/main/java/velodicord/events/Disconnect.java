@@ -4,7 +4,8 @@ import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
-import velodicord.config;
+import velodicord.Config;
+import velodicord.VOICEVOX;
 import velodicord.discordbot;
 
 import java.awt.*;
@@ -30,9 +31,9 @@ public class Disconnect {
                 .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                 .build()).queue();
         String message = player+"がマイクラサーバーから退出しました";
-        for (String word : config.dic.keySet()) {
-            message = message.replace(word, config.dic.get(word));
+        for (String word : Config.dic.keySet()) {
+            message = message.replace(word, Config.dic.get(word));
         }
-        discordbot.sendvoicemessage(message);
+        discordbot.sendvoicemessage(message, Config.minespeaker.getOrDefault(event.getPlayer().getUniqueId().toString(), Integer.valueOf(Config.config.get("DefaultSpeakerID"))));
     }
 }

@@ -3,7 +3,7 @@ package velodicord.events;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
-import velodicord.config;
+import velodicord.Config;
 import velodicord.discordbot;
 
 import java.awt.*;
@@ -47,10 +47,10 @@ public class ServerConnected {
                             .setAuthor(player, null, "https://mc-heads.net/avatar/"+player+".png")
                             .build()).queue();
                     String message = player+"が"+targetServer+"に入室しました";
-                    for (String word : config.dic.keySet()) {
-                        message = message.replace(word, config.dic.get(word));
+                    for (String word : Config.dic.keySet()) {
+                        message = message.replace(word, Config.dic.get(word));
                     }
-                    discordbot.sendvoicemessage(message);
+                    discordbot.sendvoicemessage(message, Integer.parseInt(Config.config.get("DefaultSpeakerID")));
                 }
         );
     }
