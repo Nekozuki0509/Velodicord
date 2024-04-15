@@ -274,7 +274,7 @@ public class discord extends ListenerAdapter {
                 StringBuilder speakers = new StringBuilder();
                 VOICEVOX.voicevox.keySet().forEach(id -> speakers.append("・ ").append(VOICEVOX.voicevox.get(id)).append(" : ").append(id).append("\n"));
                 event.replyEmbeds(new EmbedBuilder()
-                        .setTitle("読み上げの声の種類とそのID")
+                        .setTitle("話者の種類とそのID")
                         .setDescription(speakers)
                         .setColor(Color.blue)
                         .build()
@@ -293,7 +293,7 @@ public class discord extends ListenerAdapter {
                     discordbot.sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
                 } else {
                     event.replyEmbeds(new EmbedBuilder()
-                            .setTitle(id + "を持つ読み上げの声はありません")
+                            .setTitle(id + "を持つ話者はいません")
                             .setColor(Color.red)
                             .build()
                     ).setEphemeral(true).queue();
@@ -312,7 +312,7 @@ public class discord extends ListenerAdapter {
                     discordbot.sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
                 } else {
                     event.replyEmbeds(new EmbedBuilder()
-                            .setTitle(id + "を持つ読み上げの声はありません")
+                            .setTitle(id + "を持つ話者はいません")
                             .setColor(Color.red)
                             .build()
                     ).setEphemeral(true).queue();

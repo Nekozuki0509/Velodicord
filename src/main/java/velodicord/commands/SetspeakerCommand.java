@@ -27,7 +27,7 @@ public final class SetspeakerCommand implements SimpleCommand {
                 );
                 discordbot.sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
             } else {
-                player.sendMessage(text(id + "を持つ読み上げの声はありません", RED));
+                player.sendMessage(text(id + "を持つ話者はいません", RED));
             }
         }
     }

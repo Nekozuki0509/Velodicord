@@ -55,11 +55,11 @@ public class discordbot {
                         .addOption(OptionType.USER, "bot", "登録したいbot", true),
                 Commands.slash("deletedetectbot", "登録されている発言を無視しないbotの削除")
                         .addOption(OptionType.USER, "bot", "削除したいbot", true),
-                Commands.slash("showspeaker", "読み上げの声の種類とID"),
-                Commands.slash("setspeaker", "読み上げの声を設定")
-                        .addOption(OptionType.INTEGER, "id", "読み上げの声のID", true),
-                Commands.slash("setdefaultspeaker", "デフォルトの読み上げの声を設定")
-                        .addOption(OptionType.INTEGER, "id", "読み上げの声のID", true)
+                Commands.slash("showspeaker", "話者の種類とID"),
+                Commands.slash("setspeaker", "話者を設定")
+                        .addOption(OptionType.INTEGER, "id", "話者のID", true),
+                Commands.slash("setdefaultspeaker", "デフォルトの話者を設定")
+                        .addOption(OptionType.INTEGER, "id", "話者のID", true)
         ).queue();
 
         MainChannel = jda.getTextChannelById(Config.config.get("MainChannelID"));
