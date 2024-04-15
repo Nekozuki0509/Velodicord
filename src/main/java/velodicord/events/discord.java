@@ -27,7 +27,7 @@ import static velodicord.discordbot.*;
 public class discord extends ListenerAdapter {
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if (!event.getAuthor().isBot() && !Config.detectbot.contains(event.getAuthor().getId()) && event.getChannel().getId().equals(MainChannel.getId())) {
+        if (!(event.getAuthor().isBot() && !Config.detectbot.contains(event.getAuthor().getId())) && event.getChannel().getId().equals(MainChannel.getId())) {
             String message = event.getMessage().getContentDisplay();
             String japanese;
             if (!(japanese=(!(japanese=Japanizer.japanize(message)).isEmpty()?"("+japanese+")":"")).isEmpty() && !message.contains("https://") && !message.contains("```")) MainChannel.sendMessage(message+japanese).queue();
@@ -69,7 +69,7 @@ public class discord extends ListenerAdapter {
     public void onGuildVoiceUpdate(@Nonnull GuildVoiceUpdateEvent event) {
         AudioChannelUnion channelUnion;
         if (voicechannel == null) return;
-        if (event.getMember().getUser().isBot()) return;
+        if (event.getMember().getUser().isBot() && !Config.detectbot.contains(event.getMember().getId())) return;
         if ((channelUnion=event.getChannelJoined()) != null && voicechannel.equals(channelUnion.getId())) {
             String message = event.getMember().getEffectiveName()+"がボイスチャンネルに参加しました";
             for (String word : Config.dic.keySet()) {
