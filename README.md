@@ -23,11 +23,21 @@
 1. 楽しみましょう!
 ## configファイル
 ```
-#この数字は変えないでください
-file-version: 1
-#discordのbot token
-BotToken: 123456
-#メッセージを送るdiscordのチャンネルID
-ChannelId: 123456
+{
+  "_fcomment_" : "この値は変更しないでください",
+  "file-version" : "1",
+  "_bcomment_" : "discordbotのtoken",
+  "BotToken" : "123456",
+  "_mcomment_" : "discordのメインチャンネルID",
+  "MainChannelID" : "123456",
+  "_lcomment_" : "discordの入退出などの通知チャンネルID(オプション)",
+  "LogChannelID" : "000000",
+  "_pcomment_" : "discordのPOSチャンネルID(オプション)",
+  "PosChannelID" : "000000",
+  "_vcomment_" : "VOICEVOXのタイプ CPU : 1 DirectML : 2 CUDA : 3",
+  "VOICEVOX-type" : "1",
+  "_dcomment_" : "デフォルトの読み上げの声のID",
+  "DefaultSpeakerID" : "3"
+}
 ```
 ## [modrinth](https://modrinth.com/project/velodicord)で公開しています
