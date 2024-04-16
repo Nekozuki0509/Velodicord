@@ -43,8 +43,6 @@ public class ListenerClose {
             throw new RuntimeException(e);
         }
         discordbot.LogChannel.sendMessage("❌velocityサーバーが停止しました").queue();
-        jda.shutdown();
-        jda.awaitShutdown();
         V4S4J.fin();
     }
 }

@@ -3,8 +3,10 @@ package velodicord;
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
+import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -19,6 +21,8 @@ import velodicord.events.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
+import static velodicord.discordbot.jda;
 
 @Plugin(
         id = "velodicord",
@@ -69,6 +73,8 @@ public class Velodicord {
         proxy.getEventManager().register(this, new PlayerChat());
 
         proxy.getEventManager().register(this, new PluginMessage());
+
+        proxy.getEventManager().register(this, ProxyShutdownEvent.class, PostOrder.LAST, e -> jda.shutdown());
 
         String[] serverNames = proxy.getAllServers().stream().map(server -> server.getServerInfo().getName()).toArray(String[]::new);
         CommandManager commandManager = proxy.getCommandManager();
