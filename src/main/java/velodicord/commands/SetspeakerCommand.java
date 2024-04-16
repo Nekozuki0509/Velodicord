@@ -19,7 +19,7 @@ public final class SetspeakerCommand implements SimpleCommand {
         int id = Integer.parseInt(invocation.arguments()[0]);
         if (invocation.source() instanceof Player player) {
             if (VOICEVOX.voicevox.containsKey(id)) {
-                Config.disspeaker.put(player.getUniqueId().toString(), id);
+                Config.minespeaker.put(player.getUniqueId().toString(), id);
                 player.sendMessage(text()
                         .append(text(VOICEVOX.voicevox.get(id), AQUA))
                         .append(text("に設定しました"))
