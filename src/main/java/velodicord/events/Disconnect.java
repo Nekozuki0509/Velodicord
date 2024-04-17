@@ -34,6 +34,6 @@ public class Disconnect {
         for (String word : Config.dic.keySet()) {
             message = message.replace(word, Config.dic.get(word));
         }
-        discordbot.sendvoicemessage(message, Config.minespeaker.getOrDefault(event.getPlayer().getUniqueId().toString(), Integer.valueOf(Config.config.get("DefaultSpeakerID"))));
+        discordbot.sendvoicemessage(message, Integer.parseInt(Config.config.get("DefaultSpeakerID")));
     }
 }
