@@ -39,8 +39,8 @@ public class discord extends ListenerAdapter {
             String mmessage = message.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "<ネタバレ>");
             if (!event.getMessage().getAttachments().isEmpty()) {
                 if (cutmessage.isEmpty()) {
-                    mmessage = "添付ファイル";
-                    cutmessage = "<添付ファイル>";
+                    cutmessage = "添付ファイル";
+                    mmessage = "<添付ファイル>";
                 } else {
                     cutmessage += "ぷらす添付ファイル";
                     mmessage += "<+添付ファイル>";
