@@ -54,7 +54,7 @@ public class Velodicord {
     }
 
     @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent proxyInitializeEvent) throws InterruptedException, IOException {
+    public void onProxyInitialization(ProxyInitializeEvent event) throws InterruptedException, IOException {
 
         Config.init();
 

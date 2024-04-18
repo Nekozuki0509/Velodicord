@@ -18,9 +18,8 @@ import java.awt.*;
 import java.util.Objects;
 
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.DARK_GREEN;
-import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
 
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static velodicord.Velodicord.velodicord;
 import static velodicord.discordbot.*;
 
@@ -37,13 +36,14 @@ public class discord extends ListenerAdapter {
             }
             cutmessage = cutmessage.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "ネタバレ");
             String mmessage = message.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "<ネタバレ>");
+            String temp = "";
             if (!event.getMessage().getAttachments().isEmpty()) {
                 if (cutmessage.isEmpty()) {
                     cutmessage = "添付ファイル";
-                    mmessage = "<添付ファイル>";
+                    temp = "<添付ファイル>";
                 } else {
                     cutmessage += "ぷらす添付ファイル";
-                    mmessage += "<+添付ファイル>";
+                    temp += "<+添付ファイル>";
                 }
             }
             velodicord.getProxy().sendMessage(text()
@@ -51,6 +51,7 @@ public class discord extends ListenerAdapter {
                     .append(text("<"+event.getAuthor().getName()+"> "))
                     .append(text(mmessage))
                     .append(text(!(mmessage=Japanizer.japanize(mmessage)).isEmpty()?"("+mmessage+")":"", GOLD))
+                    .append(text(temp, BLUE))
             );
             if (cutmessage.contains("https://")) {
                 sendvoicemessage("ゆーあーるえる省略", Config.disspeaker.getOrDefault(event.getAuthor().getId(), Integer.valueOf(Config.config.get("DefaultSpeakerID"))));
@@ -290,7 +291,7 @@ public class discord extends ListenerAdapter {
                             .setColor(Color.blue)
                             .build()
                     ).setEphemeral(true).queue();
-                    discordbot.sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
+                    sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
                 } else {
                     event.replyEmbeds(new EmbedBuilder()
                             .setTitle(id + "を持つ話者はいません")
@@ -309,7 +310,7 @@ public class discord extends ListenerAdapter {
                             .setColor(Color.blue)
                             .build()
                     ).setEphemeral(true).queue();
-                    discordbot.sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
+                    sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
                 } else {
                     event.replyEmbeds(new EmbedBuilder()
                             .setTitle(id + "を持つ話者はいません")
