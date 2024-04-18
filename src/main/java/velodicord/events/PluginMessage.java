@@ -41,7 +41,7 @@ public class PluginMessage {
 
             //command type:server:player:command
             case "COMMAND" -> {
-                if (!Config.ignorecommand.contains(data[3]))
+                if (!Config.ignorecommand.contains(data[3].split(" ")[0]))
                         discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
                                 .setTitle("["+data[1]+"]で["+data[3]+"]を実行しました")
                                 .setColor(Color.yellow)
