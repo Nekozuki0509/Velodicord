@@ -5,7 +5,6 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import velodicord.Config;
-import velodicord.VOICEVOX;
 import velodicord.discordbot;
 
 import java.awt.*;

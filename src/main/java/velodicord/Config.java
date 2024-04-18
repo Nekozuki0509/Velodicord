@@ -20,6 +20,8 @@ public class Config {
 
     public static List<String> detectbot;
 
+    public static List<String> ignorecommand;
+
     public static Map<String, Integer> disspeaker;
 
     public static Map<String, Integer> minespeaker;
@@ -36,6 +38,8 @@ public class Config {
     public static Path dicjson;
 
     public static Path detectbotjson;
+
+    public static Path ignorecommandjson;
 
     public static Path disspeakerjson;
 
@@ -57,6 +61,9 @@ public class Config {
         if (Files.notExists(detectbotjson))
             Files.copy(Objects.requireNonNull(Velodicord.class.getResourceAsStream("/array.json")), detectbotjson);
 
+        if (Files.notExists(ignorecommandjson))
+            Files.copy(Objects.requireNonNull(Velodicord.class.getResourceAsStream("/array.json")), ignorecommandjson);
+
         if (Files.notExists(disspeakerjson))
             Files.copy(Objects.requireNonNull(Velodicord.class.getResourceAsStream("/object.json")), disspeakerjson);
 
@@ -74,6 +81,9 @@ public class Config {
         }
         try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(detectbotjson)), StandardCharsets.UTF_8))) {
             detectbot = gson.fromJson(reader, new TypeToken<List<String>>() {}.getType());
+        }
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(ignorecommandjson)), StandardCharsets.UTF_8))) {
+            ignorecommand = gson.fromJson(reader, new TypeToken<List<String>>() {}.getType());
         }
         try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(disspeakerjson)), StandardCharsets.UTF_8))) {
             disspeaker = gson.fromJson(reader, new TypeToken<Map<String, Integer>>() {}.getType());

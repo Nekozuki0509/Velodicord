@@ -21,6 +21,7 @@ public class discordbot {
     public static TextChannel MainChannel;
     public static TextChannel LogChannel;
     public static TextChannel PosChannel;
+    public static TextChannel CommandChannel;
     public static Webhook webhook;
     public static String voicechannel;
 
@@ -49,6 +50,8 @@ public class discordbot {
                         .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
                 Commands.slash("setpos", "POSチャンネルを現在いるテキストチャンネルに設定する")
                         .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
+                Commands.slash("setcommand", "コマンドチャンネルを現在いるテキストチャンネルに設定する")
+                        .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
                 Commands.slash("showchannel", "設定されているチャンネル"),
                 Commands.slash("showdetectbot", "登録されている発言を無視しないbot一覧"),
                 Commands.slash("adddetectbot", "新たに発言を無視しないbotを登録")
@@ -59,12 +62,18 @@ public class discordbot {
                 Commands.slash("setspeaker", "話者を設定")
                         .addOption(OptionType.INTEGER, "id", "話者のID", true),
                 Commands.slash("setdefaultspeaker", "デフォルトの話者を設定")
-                        .addOption(OptionType.INTEGER, "id", "話者のID", true)
+                        .addOption(OptionType.INTEGER, "id", "話者のID", true),
+                Commands.slash("showignorecommand", "登録されている通知しないコマンド一覧"),
+                Commands.slash("addignorecommand", "新たに通知しないコマンドを登録")
+                        .addOption(OptionType.STRING, "bot", "コマンド", true),
+                Commands.slash("deleteignorecommand", "登録されている通知しないコマンドの削除")
+                        .addOption(OptionType.STRING, "bot", "削除したいコマンド", true)
         ).queue();
 
         MainChannel = jda.getTextChannelById(Config.config.get("MainChannelID"));
         LogChannel = Config.config.get("LogChannelID").equals("000000")?MainChannel:jda.getTextChannelById(Config.config.get("LogChannelID"));
         PosChannel = Config.config.get("PosChannelID").equals("000000")?MainChannel:jda.getTextChannelById(Config.config.get("PosChannelID"));
+        CommandChannel = Config.config.get("CommandChannelID").equals("000000")?MainChannel:jda.getTextChannelById(Config.config.get("CommandChannelID"));
         if (MainChannel == null) {
             throw new NullPointerException("チャンネルIDが不正です");
         }

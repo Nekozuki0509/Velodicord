@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import velodicord.Config;
 import velodicord.VOICEVOX;
-import velodicord.discordbot;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
@@ -88,7 +87,7 @@ public class discord extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if (!event.getChannel().getId().equals(MainChannel.getId())) {
+        if (!event.getChannel().getId().equals(CommandChannel.getId())) {
             event.replyEmbeds(new EmbedBuilder()
                     .setColor(Color.red)
                     .setTitle("不明なチャンネルです")
@@ -108,6 +107,10 @@ public class discord extends ListenerAdapter {
                 if (MainChannel.getId().equals(PosChannel.getId())) {
                     PosChannel = MainChannel;
                     Config.config.put("PosChannelID", PosChannel.getId());
+                }
+                if (MainChannel.getId().equals(CommandChannel.getId())) {
+                    CommandChannel = MainChannel;
+                    Config.config.put("CommandChannelID", CommandChannel.getId());
                 }
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("メインチャンネルを" + MainChannel.getName() + "(" + MainChannel.getId() + ")に設定しました")
@@ -131,6 +134,16 @@ public class discord extends ListenerAdapter {
                 Config.config.put("PosChannelID", PosChannel.getId());
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("POSチャンネルを" + PosChannel.getName() + "(" + PosChannel.getId() + ")に設定しました")
+                        .setColor(Color.blue)
+                        .build()
+                ).queue();
+            }
+
+            case "setcommand" -> {
+                CommandChannel = event.getOptions().get(0).getAsChannel().asTextChannel();
+                Config.config.put("CommandChannelID", CommandChannel.getId());
+                event.replyEmbeds(new EmbedBuilder()
+                        .setTitle("コマンドチャンネルを" + CommandChannel.getName() + "(" + CommandChannel.getId() + ")に設定しました")
                         .setColor(Color.blue)
                         .build()
                 ).queue();
@@ -233,8 +246,9 @@ public class discord extends ListenerAdapter {
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("設定されているチャンネル")
                         .setDescription("メインチャンネル -> " + MainChannel.getName() + "(" + MainChannel.getId() + ")\n" +
-                                        "ログチャンネル 　-> " + LogChannel.getName() + "(" + LogChannel.getId() + ")\n" +
-                                        "POSチャンネル 　-> " + PosChannel.getName() + "(" + PosChannel.getId() + ")"
+                                "ログチャンネル 　   -> " + LogChannel.getName() + "(" + LogChannel.getId() + ")\n" +
+                                "POSチャンネル 　   -> " + PosChannel.getName() + "(" + PosChannel.getId() + ")\n" +
+                                "コマンドチャンネル 　-> " + CommandChannel.getName() + "(" + CommandChannel.getId() + ")"
                         )
                         .setColor(Color.blue)
                         .build()
@@ -318,6 +332,39 @@ public class discord extends ListenerAdapter {
                             .build()
                     ).setEphemeral(true).queue();
                 }
+            }
+
+            case "showignorecommand" -> {
+                StringBuilder builder = new StringBuilder();
+                Config.ignorecommand.forEach(command -> builder.append("・ ").append(command).append("\n"));
+                event.replyEmbeds(new EmbedBuilder()
+                        .setTitle("登録されている通知しないコマンド一覧")
+                        .setDescription(builder.toString())
+                        .setColor(Color.blue)
+                        .build()
+                ).queue();
+            }
+
+            case "addignorecommand" -> {
+                String command = event.getOptions().get(0).getAsString();
+                Config.ignorecommand.add(command);
+                event.replyEmbeds(new EmbedBuilder()
+                        .setTitle("コマンドを登録しました")
+                        .setDescription(command)
+                        .setColor(Color.blue)
+                        .build()
+                ).queue();
+            }
+
+            case "deleteignorecommand" -> {
+                String command = event.getOptions().get(0).getAsString();
+                Config.ignorecommand.remove(command);
+                event.replyEmbeds(new EmbedBuilder()
+                        .setTitle("コマンドを削除しました")
+                        .setDescription(command)
+                        .setColor(Color.blue)
+                        .build()
+                ).queue();
             }
         }
     }

@@ -11,12 +11,11 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 import static velodicord.Config.*;
-import static velodicord.discordbot.jda;
 
 
 public class ListenerClose {
     @Subscribe(order = PostOrder.FIRST)
-    public void onListenerClose(ListenerCloseEvent event) throws InterruptedException {
+    public void onListenerClose(ListenerCloseEvent event) {
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.dicjson)), StandardCharsets.UTF_8))) {
             gson.toJson(dic, writer);
         } catch (IOException e) {
@@ -24,6 +23,11 @@ public class ListenerClose {
         }
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.detectbotjson)), StandardCharsets.UTF_8))) {
             gson.toJson(detectbot, writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(ignorecommandjson)), StandardCharsets.UTF_8))) {
+            gson.toJson(ignorecommand, writer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

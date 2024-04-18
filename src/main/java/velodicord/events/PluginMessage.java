@@ -4,6 +4,7 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import net.dv8tion.jda.api.EmbedBuilder;
+import velodicord.Config;
 import velodicord.discordbot;
 
 import java.awt.*;
@@ -39,11 +40,14 @@ public class PluginMessage {
                     .build()).queue();
 
             //command type:server:player:command
-            case "COMMAND" -> discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
-                    .setTitle("["+data[1]+"]で["+data[3]+"]を実行しました")
-                    .setColor(Color.yellow)
-                    .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
-                    .build()).queue();
+            case "COMMAND" -> {
+                if (!Config.ignorecommand.contains(data[3]))
+                        discordbot.LogChannel.sendMessageEmbeds(new EmbedBuilder()
+                                .setTitle("["+data[1]+"]で["+data[3]+"]を実行しました")
+                                .setColor(Color.yellow)
+                                .setAuthor(data[2], null, "https://mc-heads.net/avatar/"+data[2]+".png")
+                                .build()).queue();
+            }
 
             //pos type:server:player:dim:xyz
             case "POS" -> {

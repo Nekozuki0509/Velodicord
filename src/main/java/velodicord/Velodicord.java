@@ -46,6 +46,7 @@ public class Velodicord {
         Config.dicjson = dataDirectory.resolve("dic.json");
         Config.configjson = dataDirectory.resolve("config.json");
         Config.detectbotjson = dataDirectory.resolve("detectbot.json");
+        Config.ignorecommandjson = dataDirectory.resolve("ignorecommand.json");
         Config.disspeakerjson = dataDirectory.resolve("disspeaker.json");
         Config.minespeakerjson = dataDirectory.resolve("minespeaker.json");
         velodicord = this;
