@@ -65,9 +65,9 @@ public class discordbot {
                         .addOption(OptionType.INTEGER, "id", "話者のID", true),
                 Commands.slash("showignorecommand", "登録されている通知しないコマンド一覧"),
                 Commands.slash("addignorecommand", "新たに通知しないコマンドを登録")
-                        .addOption(OptionType.STRING, "bot", "コマンド", true),
+                        .addOption(OptionType.STRING, "command", "コマンド", true),
                 Commands.slash("deleteignorecommand", "登録されている通知しないコマンドの削除")
-                        .addOption(OptionType.STRING, "bot", "削除したいコマンド", true)
+                        .addOption(OptionType.STRING, "command", "削除したいコマンド", true)
         ).queue();
 
         MainChannel = jda.getTextChannelById(Config.config.get("MainChannelID"));
