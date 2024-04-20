@@ -201,7 +201,7 @@ public class discord extends ListenerAdapter {
                 StringBuilder players = new StringBuilder();
                 velodicord.getProxy().getAllPlayers().forEach(player -> players.append("・[").append(player.getCurrentServer().get().getServerInfo().getName()).append("]").append(player.getUsername()).append("\n"));
                 event.replyEmbeds(new EmbedBuilder()
-                        .setTitle("現在参加しているプレーヤー")
+                        .setTitle("現在参加しているプレーヤー一覧")
                         .setDescription(players.toString())
                         .setColor(Color.blue)
                         .build()

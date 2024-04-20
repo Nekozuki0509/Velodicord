@@ -35,7 +35,7 @@ public class discordbot {
 
         jda.awaitReady();
         jda.updateCommands().addCommands(
-                Commands.slash("player", "現在参加しているプレイヤー"),
+                Commands.slash("player", "現在参加しているプレイヤー一覧"),
                 Commands.slash("join", "ボイスチャンネルへの参加"),
                 Commands.slash("leave", "ボイスチャンネルからの退出"),
                 Commands.slash("showdic", "辞書に登録されている単語一覧"),
@@ -44,13 +44,13 @@ public class discordbot {
                         .addOption(OptionType.STRING, "read", "登録したい単語の読み方", true),
                 Commands.slash("deletedic", "辞書に登録されている単語の削除")
                         .addOption(OptionType.STRING, "word", "削除したい単語", true),
-                Commands.slash("setmain", "メインチャンネルを現在いるテキストチャンネルに設定する")
+                Commands.slash("setmain", "メインチャンネルを設定")
                         .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
-                Commands.slash("setlog", "ログチャンネルを現在いるテキストチャンネルに設定する")
+                Commands.slash("setlog", "ログチャンネルを設定")
                         .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
-                Commands.slash("setpos", "POSチャンネルを現在いるテキストチャンネルに設定する")
+                Commands.slash("setpos", "POSチャンネルを設定")
                         .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
-                Commands.slash("setcommand", "コマンドチャンネルを現在いるテキストチャンネルに設定する")
+                Commands.slash("setcommand", "コマンドチャンネルを設定")
                         .addOption(OptionType.CHANNEL, "textchannel", "設定したいテキストチャンネル", true),
                 Commands.slash("showchannel", "設定されているチャンネル"),
                 Commands.slash("showdetectbot", "登録されている発言を無視しないbot一覧"),
