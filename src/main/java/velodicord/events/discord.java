@@ -49,7 +49,7 @@ public class discord extends ListenerAdapter {
                     .append(text("[discord]", DARK_GREEN))
                     .append(text("<"+event.getAuthor().getName()+"> "))
                     .append(text(mmessage))
-                    .append(text(!(mmessage=Japanizer.japanize(mmessage)).isEmpty()?"("+mmessage+")":"", GOLD))
+                    .append(text(!(mmessage=Japanizer.japanize(mmessage)).isEmpty() && !message.contains("https://") && !message.contains("```") ? "("+mmessage+")":"", GOLD))
                     .append(text(temp, BLUE))
             );
             if (cutmessage.contains("https://")) {
@@ -68,8 +68,21 @@ public class discord extends ListenerAdapter {
     @Override
     public void onGuildVoiceUpdate(@Nonnull GuildVoiceUpdateEvent event) {
         AudioChannelUnion channelUnion;
-        if (voicechannel == null) return;
         if (event.getMember().getUser().isBot() && !Config.detectbot.contains(event.getMember().getId())) return;
+        if (voicechannel == null) {
+            GuildVoiceState voiceState = event.getMember().getVoiceState();
+            event.getGuild().getAudioManager().openAudioConnection(voiceState.getChannel());
+            event.getGuild().getAudioManager().setSelfDeafened(true);
+            MainChannel.sendMessageEmbeds(new EmbedBuilder()
+                    .setColor(Color.cyan)
+                    .setTitle("["+voiceState.getChannel().getName()+"]に接続しました")
+                    .build()
+            ).queue();
+
+            voicechannel = voiceState.getChannel().getId();
+            sendvoicemessage("接続しました", Integer.parseInt(Config.config.get("DefaultSpeakerID")));
+            return;
+        }
         if ((channelUnion=event.getChannelJoined()) != null && voicechannel.equals(channelUnion.getId())) {
             String message = event.getMember().getEffectiveName()+"がボイスチャンネルに参加しました";
             for (String word : Config.dic.keySet()) {
@@ -77,6 +90,16 @@ public class discord extends ListenerAdapter {
             }
             sendvoicemessage(message, Integer.parseInt(Config.config.get("DefaultSpeakerID")));
         } else if ((channelUnion=event.getChannelLeft()) != null && voicechannel.equals(channelUnion.getId())) {
+            if (jda.getVoiceChannelById(voicechannel).getMembers().stream().noneMatch(member -> !member.getUser().isBot() || Config.detectbot.contains(member.getId()))) {
+                event.getGuild().getAudioManager().closeAudioConnection();
+                MainChannel.sendMessageEmbeds(new EmbedBuilder()
+                        .setColor(Color.orange)
+                        .setTitle("切断しました")
+                        .build()
+                ).queue();
+                voicechannel = null;
+                return;
+            }
             String message = event.getMember().getEffectiveName()+"がボイスチャンネルから退出しました";
             for (String word : Config.dic.keySet()) {
                 message = message.replace(word, Config.dic.get(word));
