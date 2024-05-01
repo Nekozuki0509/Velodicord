@@ -53,7 +53,7 @@ public class PlayerChat {
         }
         cutmessage = cutmessage.replace("@", "アット");
         String cutjapanese = !(cutjapanese=Japanizer.japanize(cutmessage)).isEmpty()?"("+cutjapanese+")":"";
-        discordbot.sendvoicemessage(cutmessage+cutjapanese, Config.minespeaker.getOrDefault(event.getPlayer().getUniqueId().toString(), Integer.parseInt(Config.config.get("DefaultSpeakerID"))));
+        String voice = cutmessage + cutjapanese;
         String japanese = Japanizer.japanize(message);
         if (message.contains("@")){
             for (Member member : discordbot.MainChannel.getMembers()) {
@@ -109,5 +109,6 @@ public class PlayerChat {
             }
         });
         executor.shutdown();
+        discordbot.sendvoicemessage(voice, Config.minespeaker.getOrDefault(event.getPlayer().getUniqueId().toString(), Integer.parseInt(Config.config.get("DefaultSpeakerID"))));
     }
 }
