@@ -14,11 +14,13 @@ import velodicord.VOICEVOX;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.kyori.adventure.text.Component.text;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static velodicord.Config.dic;
 import static velodicord.Velodicord.velodicord;
 import static velodicord.discordbot.*;
 
@@ -30,8 +32,8 @@ public class discord extends ListenerAdapter {
             String japanese;
             if (!(japanese=(!(japanese=Japanizer.japanize(message)).isEmpty()?"("+japanese+")":"")).isEmpty() && !message.contains("https://") && !message.contains("```")) MainChannel.sendMessage(message+japanese).queue();
             String cutmessage = message;
-            for (String word : Config.dic.keySet()) {
-                cutmessage = cutmessage.replace(word, Config.dic.get(word));
+            for (String word : dic.keySet()) {
+                cutmessage = cutmessage.replace(word, dic.get(word));
             }
             cutmessage = cutmessage.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "ネタバレ");
             String mmessage = message.replace("~~", "").replace("**", "").replace("__", "").replaceAll("\\|\\|(.*?)\\|\\|", "<ネタバレ>");
@@ -85,8 +87,8 @@ public class discord extends ListenerAdapter {
         }
         if ((channelUnion=event.getChannelJoined()) != null && voicechannel.equals(channelUnion.getId())) {
             String message = event.getMember().getEffectiveName()+"がボイスチャンネルに参加しました";
-            for (String word : Config.dic.keySet()) {
-                message = message.replace(word, Config.dic.get(word));
+            for (String word : dic.keySet()) {
+                message = message.replace(word, dic.get(word));
             }
             sendvoicemessage(message, Integer.parseInt(Config.config.get("DefaultSpeakerID")));
         } else if ((channelUnion=event.getChannelLeft()) != null && voicechannel.equals(channelUnion.getId())) {
@@ -101,8 +103,8 @@ public class discord extends ListenerAdapter {
                 return;
             }
             String message = event.getMember().getEffectiveName()+"がボイスチャンネルから退出しました";
-            for (String word : Config.dic.keySet()) {
-                message = message.replace(word, Config.dic.get(word));
+            for (String word : dic.keySet()) {
+                message = message.replace(word, dic.get(word));
             }
             sendvoicemessage(message, Integer.parseInt(Config.config.get("DefaultSpeakerID")));
         }
@@ -233,7 +235,7 @@ public class discord extends ListenerAdapter {
 
             case "showdic" -> {
                 StringBuilder builder = new StringBuilder();
-                Config.dic.keySet().forEach(word -> builder.append("・ ").append(word).append(" -> ").append(Config.dic.get(word)).append("\n"));
+                dic.keySet().forEach(word -> builder.append("・ ").append(word).append(" -> ").append(dic.get(word)).append("\n"));
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("辞書に登録されている単語一覧")
                         .setDescription(builder.toString())
@@ -245,7 +247,11 @@ public class discord extends ListenerAdapter {
             case "adddic" -> {
                 String word = event.getOptions().get(0).getAsString();
                 String read = event.getOptions().get(1).getAsString();
-                Config.dic.put(word, read);
+                dic.put(word, read);
+                dic = dic.entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey(Comparator.comparingInt(String::length)))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                                (oldValue, newValue) -> oldValue, LinkedHashMap::new));
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("単語を登録・変更しました")
                         .setDescription(word + " -> " + read)
@@ -256,7 +262,7 @@ public class discord extends ListenerAdapter {
 
             case "deletedic" -> {
                 String word = event.getOptions().get(0).getAsString();
-                Config.dic.remove(word);
+                dic.remove(word);
                 event.replyEmbeds(new EmbedBuilder()
                         .setTitle("単語を削除しました")
                         .setDescription(word)
