@@ -249,7 +249,7 @@ public class discord extends ListenerAdapter {
                 String read = event.getOptions().get(1).getAsString();
                 dic.put(word, read);
                 dic = dic.entrySet().stream()
-                        .sorted(Map.Entry.comparingByKey(Comparator.comparingInt(String::length)))
+                        .sorted(Map.Entry.comparingByKey(Comparator.comparingInt(String::length).reversed()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                                 (oldValue, newValue) -> oldValue, LinkedHashMap::new));
                 event.replyEmbeds(new EmbedBuilder()

@@ -29,9 +29,9 @@ public class Config {
 
     public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static Type intmaptype = new TypeToken<Map<String, Integer>>() {}.getType();
+    public static Type intmaptype = new TypeToken<HashMap<String, Integer>>() {}.getType();
 
-    public static Type strmaptype = new TypeToken<Map<String, String>>() {}.getType();
+    public static Type strmaptype = new TypeToken<HashMap<String, String>>() {}.getType();
 
     public static Type listtype = new TypeToken<ArrayList<String>>() {}.getType();
 
@@ -80,7 +80,7 @@ public class Config {
         }
 
         try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(dicjson)), StandardCharsets.UTF_8))) {
-            dic = ((HashMap<String, String>) gson.fromJson(reader, strmaptype)).entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.comparingInt(String::length)))
+            dic = ((HashMap<String, String>) gson.fromJson(reader, strmaptype)).entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.comparingInt(String::length).reversed()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
         }
         try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(detectbotjson)), StandardCharsets.UTF_8))) {
