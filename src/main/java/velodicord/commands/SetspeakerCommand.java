@@ -37,7 +37,7 @@ public final class SetspeakerCommand implements SimpleCommand {
     }
     @Override
     public List<String> suggest(final Invocation invocation) {
-        return VOICEVOX.voicevox.keySet().stream().map(id -> Integer.toString(id)).toList();
+        return List.of();
     }
     @Override
     public CompletableFuture<List<String>> suggestAsync(final Invocation invocation) {

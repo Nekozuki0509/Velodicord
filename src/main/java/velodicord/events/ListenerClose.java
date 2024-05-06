@@ -11,11 +11,13 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 import static velodicord.Config.*;
+import static velodicord.discordbot.jda;
 
 
 public class ListenerClose {
     @Subscribe(order = PostOrder.FIRST)
     public void onListenerClose(ListenerCloseEvent event) {
+        discordbot.LogChannel.sendMessage("❌velocityサーバーが停止しました").queue();
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.dicjson)), StandardCharsets.UTF_8))) {
             gson.toJson(dic, writer);
         } catch (IOException e) {
@@ -46,7 +48,7 @@ public class ListenerClose {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        discordbot.LogChannel.sendMessage("❌velocityサーバーが停止しました").queue();
         V4S4J.fin();
+        jda.shutdown();
     }
 }
