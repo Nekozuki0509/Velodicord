@@ -15,6 +15,7 @@ import static velodicord.Config.*;
 
 public class VOICEVOX {
     public static Map<Integer, String> voicevox = new LinkedHashMap<>();
+
     public static void init() throws IOException, InterruptedException {
         String rawOsName = System.getProperty("os.name");
         if (Files.notExists(dataDirectory.resolve("voicevox_core"))) {
@@ -27,11 +28,14 @@ public class VOICEVOX {
                 }
                 new ProcessBuilder("cmd.exe", "/c", "cd /d", dataDirectory.toString()).directory(dataDirectory.toFile()).start().waitFor();
                 switch (config.get("velodicord.VOICEVOX-type")) {
-                    case "2" -> new ProcessBuilder("cmd.exe", "/c", "download --device directml").directory(dataDirectory.toFile()).start().waitFor();
-                    case "3" -> new ProcessBuilder("cmd.exe", "/c", "download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
-                    default ->  new ProcessBuilder("cmd.exe", "/c", "download").directory(dataDirectory.toFile()).start().waitFor();
+                    case "2" ->
+                            new ProcessBuilder("cmd.exe", "/c", "download --device directml").directory(dataDirectory.toFile()).start().waitFor();
+                    case "3" ->
+                            new ProcessBuilder("cmd.exe", "/c", "download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
+                    default ->
+                            new ProcessBuilder("cmd.exe", "/c", "download").directory(dataDirectory.toFile()).start().waitFor();
                 }
-            }else {
+            } else {
                 if (rawOsName.startsWith("Mac")) {
                     osName = "macos";
                 } else if (rawOsName.startsWith("Linux")) {
@@ -46,14 +50,17 @@ public class VOICEVOX {
                 } else {
                     throw new RuntimeException("Unsupported OS architecture: " + rawOsArch);
                 }
-                try (InputStream in = new URL("https://github.com/VOICEVOX/voicevox_core/releases/latest/download/download-"+osName+"-"+osArch).openStream()) {
+                try (InputStream in = new URL("https://github.com/VOICEVOX/voicevox_core/releases/latest/download/download-" + osName + "-" + osArch).openStream()) {
                     Files.copy(in, dataDirectory.resolve("download"));
                 }
                 new ProcessBuilder("chmod", "+x", dataDirectory.resolve("download").toString()).start().waitFor();
                 switch (config.get("velodicord.VOICEVOX-type")) {
-                    case "2" -> new ProcessBuilder("bash", "-c", "./download --device directml").directory(dataDirectory.toFile()).start().waitFor();
-                    case "3" -> new ProcessBuilder("bash", "-c", "./download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
-                    default -> new ProcessBuilder("bash", "-c", "./download").directory(dataDirectory.toFile()).start().waitFor();
+                    case "2" ->
+                            new ProcessBuilder("bash", "-c", "./download --device directml").directory(dataDirectory.toFile()).start().waitFor();
+                    case "3" ->
+                            new ProcessBuilder("bash", "-c", "./download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
+                    default ->
+                            new ProcessBuilder("bash", "-c", "./download").directory(dataDirectory.toFile()).start().waitFor();
                 }
             }
             Velodicord.velodicord.logger.info("VOICEVOXのライブラリダウンロード完了");
@@ -67,7 +74,8 @@ public class VOICEVOX {
             List<Map<String, Object>> styles = (List<Map<String, Object>>) speakerData.get("styles");
             for (Map<String, Object> style : styles) {
                 String combinedName = botName + "(" + style.get("name") + ")";
-                if (!VOICEVOX.voicevox.containsValue(combinedName)) VOICEVOX.voicevox.put(((Number) style.get("id")).intValue(), combinedName);
+                if (!voicevox.containsValue(combinedName))
+                    voicevox.put(((Number) style.get("id")).intValue(), combinedName);
             }
         }
 

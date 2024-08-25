@@ -8,14 +8,11 @@ import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
-import lombok.Getter;
 import org.slf4j.Logger;
 import velodicord.commands.PlayerlistCommand;
 import velodicord.commands.ServerCommand;
 import velodicord.commands.SetspeakerCommand;
-import velodicord.events.*;
-
+import velodicord.events.minecraft.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,8 +26,7 @@ public class Velodicord {
 
     public final Logger logger;
 
-    @Getter
-    final ProxyServer proxy;
+    public final ProxyServer proxy;
 
     public static Velodicord velodicord;
 
@@ -39,12 +35,15 @@ public class Velodicord {
         this.proxy = proxy;
         this.logger = logger;
         Config.dataDirectory = dataDirectory;
-        Config.dicjson = dataDirectory.resolve("dic.json");
         Config.configjson = dataDirectory.resolve("config.json");
+        Config.dicjson = dataDirectory.resolve("dic.json");
         Config.detectbotjson = dataDirectory.resolve("detectbot.json");
         Config.ignorecommandjson = dataDirectory.resolve("ignorecommand.json");
+        Config.disadmincommandjson = dataDirectory.resolve("disadmincommand.json");
+        Config.mineadmincommandjson = dataDirectory.resolve("mineadmincommand.json");
         Config.disspeakerjson = dataDirectory.resolve("disspeaker.json");
         Config.minespeakerjson = dataDirectory.resolve("minespeaker.json");
+        Config.mentionablejson = dataDirectory.resolve("mentionable.json");
         velodicord = this;
 
         logger.info("Velodicord loaded");
@@ -52,14 +51,11 @@ public class Velodicord {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) throws InterruptedException, IOException {
-
         Config.init();
 
         discordbot.init();
 
-        proxy.getChannelRegistrar().register(MinecraftChannelIdentifier.create("velocity", "fabdicord"));
-
-        discordbot.LogChannel.sendMessage("✅velocityサーバーが起動しました").queue();
+        discordbot.NoticeChannel.sendMessage("✅velocityサーバーが起動しました").queue();
 
         proxy.getEventManager().register(this, new ListenerClose());
 
@@ -77,7 +73,7 @@ public class Velodicord {
 
         CommandMeta server = commandManager.metaBuilder(serverNames[0]).aliases(serverNames).plugin(this).build();
         CommandMeta playerlist = commandManager.metaBuilder("playerlist").plugin(this).build();
-        CommandMeta setspeaker = commandManager.metaBuilder("setspeaker").plugin(this).build();
+        CommandMeta setspeaker = commandManager.metaBuilder("speaker").plugin(this).build();
 
         commandManager.register(server, new ServerCommand());
         commandManager.register(playerlist, new PlayerlistCommand());

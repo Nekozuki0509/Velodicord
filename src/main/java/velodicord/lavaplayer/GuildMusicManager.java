@@ -2,15 +2,13 @@ package velodicord.lavaplayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import lombok.Getter;
 
 public class GuildMusicManager {
     public final AudioPlayer audioPlayer;
 
     public final TrackScheduler scheduler;
 
-    @Getter
-    private final AudioPlayerSendHandler sendHandler;
+    public final AudioPlayerSendHandler sendHandler;
 
     public GuildMusicManager(AudioPlayerManager manager) {
         this.audioPlayer = manager.createPlayer();

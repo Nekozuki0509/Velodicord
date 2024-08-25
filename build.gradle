@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'velodicord'
-version = '1.0-SNAPSHOT'
+version = '2.0.0'
 
 repositories {
     mavenCentral()
@@ -24,12 +24,11 @@ repositories {
 dependencies {
     compileOnly "com.velocitypowered:velocity-api:3.3.0-SNAPSHOT"
     annotationProcessor "com.velocitypowered:velocity-api:3.3.0-SNAPSHOT"
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
-    implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-beta.21'
+    implementation 'net.dv8tion:JDA:5.0.0-beta.24'
     implementation 'dev.arbjerg:lavaplayer:2.1.1'
     implementation files('lib/V4S4J-assembly-0.1.0-SNAPSHOT.jar')
+    compileOnly files('lib/velocity-3.3.0-SNAPSHOT-316.jar')
 }
 
 def targetJavaVersion = 17

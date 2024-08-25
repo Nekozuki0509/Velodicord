@@ -7,18 +7,20 @@ package com.github.ucchyocean.lc3.japanize;
 
 /**
  * ローマ字表記を漢字変換して返すユーティリティ
+ *
  * @author ucchy
  */
 public class Japanizer {
     /**
      * メッセージの日本語化をする
+     *
      * @param keywordLocked
      * @return
      */
     public static String japanize(String keywordLocked) {
 
         // 変換不要なら空文字列を返す
-        if (  !isNeedToJapanize(keywordLocked) ) {
+        if (!isNeedToJapanize(keywordLocked)) {
             return "";
         }
 
@@ -34,11 +36,12 @@ public class Japanizer {
 
     /**
      * 日本語化が必要かどうかを判定する
+     *
      * @param org
      * @return
      */
     private static boolean isNeedToJapanize(String org) {
-        return ( org.getBytes().length == org.length()
+        return (org.getBytes().length == org.length()
                 && !org.matches("[ \\uFF61-\\uFF9F]+")
                 && !org.matches("^[^a-zA-Z]$"));
     }

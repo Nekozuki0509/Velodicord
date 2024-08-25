@@ -1,4 +1,4 @@
-package velodicord.events;
+package velodicord.events.minecraft;
 
 import V4S4J.V4S4J.V4S4J;
 import com.velocitypowered.api.event.PostOrder;
@@ -12,12 +12,17 @@ import java.nio.charset.StandardCharsets;
 
 import static velodicord.Config.*;
 import static velodicord.discordbot.jda;
+import static velodicord.discordbot.mentionable;
 
 
 public class ListenerClose {
     @Subscribe(order = PostOrder.FIRST)
     public void onListenerClose(ListenerCloseEvent event) {
-        discordbot.LogChannel.sendMessage("❌velocityサーバーが停止しました").queue();
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.configjson)), StandardCharsets.UTF_8))) {
+            gson.toJson(config, writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.dicjson)), StandardCharsets.UTF_8))) {
             gson.toJson(dic, writer);
         } catch (IOException e) {
@@ -33,6 +38,16 @@ public class ListenerClose {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(disadmincommandjson)), StandardCharsets.UTF_8))) {
+            gson.toJson(disadmincommand, writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(mineadmincommandjson)), StandardCharsets.UTF_8))) {
+            gson.toJson(mineadmincommand, writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.disspeakerjson)), StandardCharsets.UTF_8))) {
             gson.toJson(disspeaker, writer);
         } catch (IOException e) {
@@ -43,12 +58,13 @@ public class ListenerClose {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.configjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(config, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(mentionablejson)), StandardCharsets.UTF_8))) {
+            gson.toJson(mentionable, writer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         V4S4J.fin();
+        discordbot.NoticeChannel.sendMessage("\uD83D\uDED1velocityサーバーが停止しました").complete();
         jda.shutdown();
     }
 }

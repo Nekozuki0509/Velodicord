@@ -1,0 +1,13 @@
+[
+  "dic add",
+  "dic del",
+  "ch set",
+  "del log",
+  "commandrole set",
+  "detectbot add",
+  "detectbot del",
+  "speaker set default",
+  "ignorecommand add",
+  "ignorecommand del",
+  "mentionable set"
+]

@@ -1,16 +1,17 @@
 package velodicord.commands;
 
 import com.velocitypowered.api.command.SimpleCommand;
-import java.util.concurrent.CompletableFuture;
-import java.util.List;
-
 import com.velocitypowered.api.proxy.Player;
 import velodicord.Config;
 import velodicord.VOICEVOX;
 import velodicord.discordbot;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 public final class SetspeakerCommand implements SimpleCommand {
 
@@ -31,14 +32,17 @@ public final class SetspeakerCommand implements SimpleCommand {
             }
         }
     }
+
     @Override
     public boolean hasPermission(final Invocation invocation) {
         return true;
     }
+
     @Override
     public List<String> suggest(final Invocation invocation) {
         return List.of();
     }
+
     @Override
     public CompletableFuture<List<String>> suggestAsync(final Invocation invocation) {
         return CompletableFuture.completedFuture(List.of());
