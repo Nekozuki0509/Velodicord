@@ -64,19 +64,25 @@
 ```
 {
   "_bcomment_" : "discordbotのtoken",
-  "BotToken" : "123456",
+  "BotToken" : "aaaaaa",
   "_mcomment_" : "discordのメインチャンネルID",
-  "MainChannelID" : "123456",
-  "_lcomment_" : "discordの入退出などの通知チャンネルID(オプション)",
+  "MainChannelID" : "000000",
+  "_pmcomment_" : "discordのプラグインメッセージチャンネルID",
+  "PMChannelID" : "000000",
+  "_lcomment_" : "マイクラサーバーのログ**フォーラム**チャンネルID(オプション)",
   "LogChannelID" : "000000",
-  "_pcomment_" : "discordのPOSチャンネルID(オプション)",
+  "_ncomment_" : "discordの入退出などの通知チャンネルID(オプション)",
+  "NoticeChannelID" : "000000",
+  "_pocomment_" : "discordのPOSチャンネルID(オプション)",
   "PosChannelID" : "000000",
-  "_ccomment_" : "discordのコマンドチャンネルID(オプション)",
+  "_cccomment_" : "discordのコマンドチャンネルID(オプション)",
   "CommandChannelID" : "000000",
   "_vcomment_" : "VOICEVOXのタイプ CPU : 1 DirectML : 2 CUDA : 3",
   "VOICEVOX-type" : "1",
   "_dcomment_" : "デフォルトの読み上げの声のID",
-  "DefaultSpeakerID" : "3"
+  "DefaultSpeakerID" : "3",
+  "_crcomment_" : "管理者コマンドを実行できるロールID",
+  "CommandRoleID" : "aaaaaa"
 }
 ```
 ## [modrinth](https://modrinth.com/project/velodicord)で公開しています
