@@ -1,8 +1,8 @@
 # Velodicord
 ## 説明
-これはvelocity専用のプラグインで、discord-minecraft間のチャット共有、それの日本語化、それの読み上げ、velocityサーバーの起動・停止通知、プレイヤーの入退出・サーバー移動通知、プレイヤーの死亡通知、プレイヤーの進捗達成通知、プレイヤーのコマンド実行通知、/サーバー名でのサーバー移動、/posでの現在いる座標のdiscordへの通知、/playerで現在参加しているプレイヤー通知(discordからも可)ができるとにかくプロキシサーバーに必要と思われる機能を全部つぎ込んだものです
+これはvelocity専用のプラグインで、discord-minecraft間のチャット共有、それの日本語化、それの読み上げ、velocityとバックエンドサーバーの起動・停止通知、プレイヤーの入退出・サーバー移動通知、プレイヤーの死亡通知、プレイヤーの進捗達成通知、プレイヤーのコマンド実行通知、/サーバー名でのサーバー移動、/posでの現在いる座標のdiscordへの通知、/playerで現在参加しているプレイヤー通知(discordからも可)、discordからのコマンド実行ができるとにかくプロキシサーバーに必要と思われる機能を全部つぎ込んだものです
 > [!CAUTION]
-> **プレイヤーの死亡通知、プレイヤーの進捗達成通知、プレイヤーのコマンド実行通知、/posでの現在いる座標のdiscordへの通知、チャットが二回送られることを防ぐにはfabricサーバー側に[Fabdicord](https://modrinth.com/project/fabdicord)も必要です**
+> **fabricサーバー側に[Fabdicord](https://modrinth.com/project/fabdicord)も必要です**(もし別ver.が必要なら[discord鯖](https://discord.gg/352Cdy8MjV)のrequestまで)
 ## 使い方
 1. discord botを作る
    - 必要なパーミッション
@@ -21,45 +21,75 @@
 1. velocityサーバーのpluginsフォルダにこのプラグインを入れて再起動
 1. plugins/Velodicord/config.jsonを編集
 1. 楽しみましょう!
-## 機能
-   - マイクラ、discord間チャット共有(ローマ字日本語化)
-     - discord側
-       - /showdetectbot : 登録されている発言を無視しないbot一覧
-       - /adddetectbot : 新たに発言を無視しないbotを登録
-       - /deletedetectbot : 登録されている発言を無視しないbotの削除
-       - /showignorecommand : 登録されている通知しないコマンド一覧
-       - /addignorecommand : 新たに通知しないコマンドを登録
-       - /deleteignorecommand : 登録されている通知しないコマンドの削除
-     - マイクラ側
-       - velocityサーバーの起動・停止通知
-       - プレイヤーの入退出・サーバー移動通知
-       - プレイヤーの死亡通知
-       - プレイヤーの進捗達成通知
-       - プレイヤーのコマンド実行通知
-   - 読み上げ機能
-     - discord側
-       - /join : 実行者が現在入室しているボイスチャンネルに参加
-       - /leave : 現在参加しているボイスチャンネルから退出
-       - /showdic : 辞書に登録している単語一覧
-       - /adddic : 辞書に新たな単語を登録・登録されている単語の読み方を編集
-       - /deletedic : 辞書に登録されている単語の削除
-       - /showspeaker : 話者の種類とID
-       - /setdefaultspeaker : デフォルトの話者を設定
-       - /setspeaker : 話者を設定
-     - マイクラ側
-       - /setspeaker : 話者を設定
-   - その他
-     - discord側
-       - /player : 現在参加しているプレイヤー
-       - /showchannel : 設定されているチャンネル
-       - /setmain : メインチャンネルを設定
-       - /setlog : ログチャンネルを設定
-       - /setpos : POSチャンネルを設定
-       - /setcommand : コマンドチャンネルを設定
-     - マイクラ側
-       - /playerlist : 現在参加しているプレイヤー一覧
-       - /[サーバー名] : サーバーへ接続
-       - /pos : 現在いる座標の共有。引数を渡すことでその名前でposチャンネルに保存する
+## コマンド
+   - discord側
+     - join
+       - ボイスチャンネルへの参加
+     - leave
+       - ボイスチャンネルからの退出
+     - dic (辞書関係)
+       - show
+         - 辞書に登録されている単語
+       - add [word: String] [read: String]
+         - 辞書に新たな単語を登録・登録されている単語の読み方を変更(正規表現可)
+       - del [word: String]
+         - 辞書に登録されている単語の削除
+     - ch (チャンネル関連)
+       - show
+         - 設定されているチャンネル
+       - set [name: String] [channel: Channel]
+         - チャンネルを設定
+       - del_log
+         - ログチャンネルを削除
+     - commandrole (コマンドロール関連)
+       - show
+         - 設定されているロール
+       - set [role: Role]
+         - ロールを設定
+     - detectbot (発言を無視しないbot関連)
+       - show
+         - 登録されている発言を無視しないbot
+       - add [bot: User]
+         - 新たに発言を無視しないbotを登録
+       - del [bot: User]
+         - 登録されている発言を無視しないbotの削除
+     - speaker (話者関連)
+       - show
+         - all
+           - 話者の種類とID
+         - your
+           - 設定されている話者
+         - default
+           - デフォルトの話者
+       - set [which: String] [id: Integer]
+         - 話者を設定
+     - ignorecommand (通知しないコマンド関連)
+       - show
+         - 登録されている通知しないコマンド
+       - add [command: String]
+         - 新たに通知しないコマンドを登録
+       - del [command: String]
+         - 登録されている通知しないコマンドの削除
+     - mentionable (メンション可能ロール関係)
+       - show
+         - 登録されているメンション可能ロール
+       - set [role1: String] [role2: String] [role3 :String]
+         - メンション可能ロールの設定
+     - server (マイクラサーバー関連)
+       - info
+         - 各サーバーの情報
+       - command [name: String] [command: String]
+         - マイクラコマンド実行
+     - admincommand (管理者コマンド関連)
+       - show
+       - add [which: String] [command: String]
+         - 新たに管理者コマンドを登録
+       - del [which: String] [command: String]
+         - 登録されている管理者コマンドの削除
+   - マイクラ側
+     - playerlist : 現在参加しているプレイヤー一覧
+     - [サーバー名] : サーバーへ接続
+     - pos : 現在いる座標の共有。引数を渡すことでその名前でposチャンネルに保存する
 ## configファイル
 ```
 {
