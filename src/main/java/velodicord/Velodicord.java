@@ -65,8 +65,6 @@ public class Velodicord {
 
         proxy.getEventManager().register(this, new PlayerChat());
 
-        proxy.getEventManager().register(this, new PluginMessage());
-
         CommandManager commandManager = proxy.getCommandManager();
 
         String[] serverNames = proxy.getAllServers().stream().map(server -> server.getServerInfo().getName()).toArray(String[]::new);

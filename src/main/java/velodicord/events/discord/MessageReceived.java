@@ -1,6 +1,7 @@
 package velodicord.events.discord;
 
 import com.github.ucchyocean.lc3.japanize.Japanizer;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -10,6 +11,7 @@ import velodicord.Config;
 import velodicord.discordbot;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
 import java.util.regex.Pattern;
 
 import static net.kyori.adventure.text.Component.text;
@@ -113,6 +115,45 @@ public class MessageReceived extends ListenerAdapter {
                             message = message.replaceAll(word, Config.dic.get(word));
                         }
                         discordbot.sendvoicemessage(message, DefaultSpeakerID);
+                    }
+
+                    case "POS" -> {
+                        velodicord.proxy.sendMessage(text()
+                                .append(text("<" + data[2] + "> ", BLUE))
+                                .append(text("POS:[", GOLD))
+                                .append(text("[" + data[1] + "]", DARK_GREEN))
+                                .append(text(data[3], GREEN))
+                                .append(text(data[4], AQUA))
+                                .append(text("]", GOLD))
+                                .build());
+                        MainChannel.sendMessageEmbeds(new EmbedBuilder()
+                                .setTitle("POS:[[" + data[1] + "]" + data[3] + data[4] + "]")
+                                .setColor(Color.cyan)
+                                .setAuthor(data[2], null, "https://mc-heads.net/avatar/" + data[2] + ".png")
+                                .build()).queue();
+                    }
+
+                    case "NPOS" -> {
+                        velodicord.proxy.sendMessage(text()
+                                .append(text("<" + data[2] + "> ", BLUE))
+                                .append(text(data[5] + ":[", GOLD))
+                                .append(text("[" + data[1] + "]", DARK_GREEN))
+                                .append(text(data[3], GREEN))
+                                .append(text(data[4], AQUA))
+                                .append(text("]", GOLD))
+                                .build());
+                        MainChannel.sendMessageEmbeds(new EmbedBuilder()
+                                .setTitle(data[5] + ":[[" + data[1] + "]" + data[3] + data[4] + "]")
+                                .setColor(Color.cyan)
+                                .setAuthor(data[2], null, "https://mc-heads.net/avatar/" + data[2] + ".png")
+                                .build()).queue();
+                        if (!discordbot.PosChannel.getId().equals(MainChannel.getId())) {
+                            discordbot.PosChannel.sendMessageEmbeds(new EmbedBuilder()
+                                    .setTitle(data[5] + ":[[" + data[1] + "]" + data[3] + data[4] + "]")
+                                    .setColor(Color.cyan)
+                                    .setAuthor(data[2], null, "https://mc-heads.net/avatar/" + data[2] + ".png")
+                                    .build()).queue();
+                        }
                     }
                 }
             }

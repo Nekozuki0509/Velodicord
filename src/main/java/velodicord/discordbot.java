@@ -114,7 +114,7 @@ public class discordbot {
                         )
                         .addSubcommands(new SubcommandData("set", "話者を設定")
                                 .addOption(OptionType.STRING, "which", "どの話者", true, true)
-                                .addOption(OptionType.INTEGER, "id", "話者の名前", true, true)
+                                .addOption(OptionType.INTEGER, "id", "話者のid", true, true)
                         ),
                 Commands.slash("ignorecommand", "通知しないコマンド関連")
                         .addSubcommands(
