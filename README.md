@@ -1,6 +1,9 @@
 [![Modrinth Version](https://img.shields.io/modrinth/v/FVtm4KDD?logo=modrinth&color=1bd768)![Modrinth Downloads](https://img.shields.io/modrinth/dt/FVtm4KDD?logo=modrinth&color=1bd768)![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/FVtm4KDD?logo=modrinth&color=1bd768)](https://modrinth.com/plugin/velodicord)
 [![Discord](https://img.shields.io/discord/1241236305741090836?logo=discord&color=5765f2)](https://discord.gg/352Cdy8MjV)
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Flit.link%2Fadmin%2Fcreator&up_message=Nekozuki0509&label=litlink&color=9594f9)](https://lit.link/nekozuki0509)
+[![Static Badge](https://img.shields.io/badge/litlink-Nekozuki0509-9594f9)](https://lit.link/nekozuki0509)
+
+[![Static Badge](https://img.shields.io/badge/github-fabdicord-blue?logo=github)](https://github.com/Nekozuki0509/Fabdicord)
+[![Static Badge](https://img.shields.io/badge/github-V4S4J-blue?logo=github)](https://github.com/Nekozuki0509/V4S4J)
 
 # Velodicord
 ## 説明
