@@ -1,8 +1,12 @@
+[![Modrinth Version](https://img.shields.io/modrinth/v/FVtm4KDD?logo=modrinth&color=1bd768)![Modrinth Downloads](https://img.shields.io/modrinth/dt/FVtm4KDD?logo=modrinth&color=1bd768)![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/FVtm4KDD?logo=modrinth&color=1bd768)](https://modrinth.com/plugin/velodicord)
+[![Discord](https://img.shields.io/discord/1241236305741090836?logo=discord&color=5765f2)](https://discord.gg/352Cdy8MjV)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Flit.link%2Fadmin%2Fcreator&up_message=Nekozuki0509&label=litlink&color=9594f9)](https://lit.link/nekozuki0509)
+
 # Velodicord
 ## 説明
 これはvelocity専用のプラグインで、discord-minecraft間のチャット共有、それの日本語化、それの読み上げ、velocityとバックエンドサーバーの起動・停止通知、プレイヤーの入退出・サーバー移動通知、プレイヤーの死亡通知、プレイヤーの進捗達成通知、プレイヤーのコマンド実行通知、/サーバー名でのサーバー移動、/posでの現在いる座標のdiscordへの通知、/playerで現在参加しているプレイヤー通知(discordからも可)、discordからのコマンド実行ができるとにかくプロキシサーバーに必要と思われる機能を全部つぎ込んだものです
 > [!CAUTION]
-> **fabricサーバー側に[Fabdicord](https://modrinth.com/project/fabdicord)も必要です**(もし別ver.が必要なら[discord鯖](https://discord.gg/352Cdy8MjV)のrequestまで)
+> **fabricサーバー側に[Fabdicord](https://modrinth.com/project/fabdicord)も必要です**(もし別ver.が必要なら[discordサーバー](https://discord.gg/352Cdy8MjV)のrequestまで)
 ## 使い方
 1. discord botを作る
    - 必要なパーミッション
@@ -115,4 +119,3 @@
   "CommandRoleID" : "aaaaaa"
 }
 ```
-## [modrinth](https://modrinth.com/project/velodicord)で公開しています
