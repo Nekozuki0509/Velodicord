@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'velodicord'
-version = '2.0.2'
+version = '2.0.3'
 
 repositories {
     mavenCentral()
@@ -28,6 +28,9 @@ dependencies {
     implementation 'net.dv8tion:JDA:5.0.0-beta.24'
     implementation 'dev.arbjerg:lavaplayer:2.1.1'
     implementation files('lib/V4S4J-assembly-0.1.0-SNAPSHOT.jar')
+
+    compileOnly files('lib/velocity-3.3.0-SNAPSHOT-433.jar')
+    compileOnly files('lib/Velocitab-1.7.3-e398306.jar')
 }
 
 def targetJavaVersion = 17

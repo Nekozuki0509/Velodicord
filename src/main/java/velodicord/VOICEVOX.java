@@ -24,7 +24,7 @@ public class VOICEVOX {
             String rawOsArch = System.getProperty("os.arch");
             String osName, osArch;
             if (rawOsName.startsWith("Win")) {
-                InputStream in = new URL("https://github.com/VOICEVOX/voicevox_core/releases/latest/download/download-windows-x64.exe").openStream();
+                InputStream in = new URL("https://github.com/VOICEVOX/voicevox_core/releases/download/0.15.7/download-windows-x64.exe").openStream();
                 try {
                     Files.copy(in, dataDirectory.resolve("download.exe"));
                 } catch (FileAlreadyExistsException ignored) {}
@@ -32,11 +32,11 @@ public class VOICEVOX {
                 new ProcessBuilder("cmd.exe", "/c", "cd /d", dataDirectory.toString()).directory(dataDirectory.toFile()).start().waitFor();
                 switch (config.get("VOICEVOX-type")) {
                     case "2" ->
-                            new ProcessBuilder("cmd.exe", "/c", "download --device directml").directory(dataDirectory.toFile()).start().waitFor();
+                            new ProcessBuilder("cmd.exe", "/c", "download --version 0.15.7 --additional-libraries-version 0.1.0 --device directml").directory(dataDirectory.toFile()).start().waitFor();
                     case "3" ->
-                            new ProcessBuilder("cmd.exe", "/c", "download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
+                            new ProcessBuilder("cmd.exe", "/c", "download --version 0.15.7 --additional-libraries-version 0.1.0 --device cuda").directory(dataDirectory.toFile()).start().waitFor();
                     default ->
-                            new ProcessBuilder("cmd.exe", "/c", "download").directory(dataDirectory.toFile()).start().waitFor();
+                            new ProcessBuilder("cmd.exe", "/c", "download --version 0.15.7 --additional-libraries-version 0.1.0").directory(dataDirectory.toFile()).start().waitFor();
                 }
             } else {
                 if (rawOsName.startsWith("Mac")) {
@@ -53,18 +53,18 @@ public class VOICEVOX {
                 } else {
                     throw new RuntimeException("Unsupported OS architecture: " + rawOsArch);
                 }
-                InputStream in = new URL("https://github.com/VOICEVOX/voicevox_core/releases/latest/download/download-" + osName + "-" + osArch).openStream();
+                InputStream in = new URL("https://github.com/VOICEVOX/voicevox_core/download/0.15.7/download/download-" + osName + "-" + osArch).openStream();
                 try {
                     Files.copy(in, dataDirectory.resolve("download"));
                 } catch (FileAlreadyExistsException ignored) {}
                 new ProcessBuilder("chmod", "+x", dataDirectory.resolve("download").toString()).start().waitFor();
                 switch (config.get("VOICEVOX-type")) {
                     case "2" ->
-                            new ProcessBuilder("bash", "-c", "./download --device directml").directory(dataDirectory.toFile()).start().waitFor();
+                            new ProcessBuilder("bash", "-c", "./download --version 0.15.7 --additional-libraries-version 0.1.0 --device directml").directory(dataDirectory.toFile()).start().waitFor();
                     case "3" ->
-                            new ProcessBuilder("bash", "-c", "./download --device cuda").directory(dataDirectory.toFile()).start().waitFor();
+                            new ProcessBuilder("bash", "-c", "./download --version 0.15.7 --additional-libraries-version 0.1.0 --device cuda").directory(dataDirectory.toFile()).start().waitFor();
                     default ->
-                            new ProcessBuilder("bash", "-c", "./download").directory(dataDirectory.toFile()).start().waitFor();
+                            new ProcessBuilder("bash", "-c", "./download --version 0.15.7 --additional-libraries-version 0.1.0").directory(dataDirectory.toFile()).start().waitFor();
                 }
             }
             Velodicord.velodicord.logger.info("VOICEVOXのライブラリダウンロード完了");
