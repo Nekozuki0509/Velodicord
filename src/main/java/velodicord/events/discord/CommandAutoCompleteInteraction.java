@@ -5,16 +5,11 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import org.jetbrains.annotations.NotNull;
-import velodicord.Config;
-import velodicord.DiscordCommandSource;
-import velodicord.VOICEVOX;
-import velodicord.Velodicord;
+import velodicord.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static velodicord.discordbot.CommandChannel;
 
 public class CommandAutoCompleteInteraction extends ListenerAdapter {
 
@@ -28,11 +23,11 @@ public class CommandAutoCompleteInteraction extends ListenerAdapter {
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if (!CommandChannel.equals(event.getChannelId())) return;
+        if (!Discordbot.getCommandChannel().equals(event.getChannelId())) return;
         switch (event.getName()) {
             case "dic" -> {
                 if ("del".equals(event.getSubcommandName())) {
-                    List<Command.Choice> options = Config.dic.keySet().stream()
+                    List<Command.Choice> options = Config.getDic().keySet().stream()
                             .filter(word -> word.contains(event.getFocusedOption().getValue()))
                             .map(word -> new Command.Choice(word, word)).toList();
 
@@ -60,14 +55,13 @@ public class CommandAutoCompleteInteraction extends ListenerAdapter {
                             .map(speaker -> new Command.Choice(speaker, speaker)).toList()).queue();
 
                     case "id" -> {
-                        List<Command.Choice> options = VOICEVOX.voicevox.keySet().stream()
-                                .filter(id -> id.toString().contains(event.getFocusedOption().getValue())
-                                        || VOICEVOX.voicevox.get(id).contains(event.getFocusedOption().getValue()))
-                                .map(id -> new Command.Choice(VOICEVOX.voicevox.get(id), id.toString())).toList();
+                        List<Command.Choice> options = Voicevox.getVoicevox().stream()
+                                .filter(m -> m.name().contains(event.getFocusedOption().getValue())
+                                        || String.valueOf(m.id()).contains(event.getFocusedOption().getValue()))
+                                .map(m -> new Command.Choice(m.name(), m.id())).toList();
 
                         if (options.size() > 25) {
-                            options = options.subList(0, 23);
-                            options.add(new Command.Choice("...", "..."));
+                            options = options.subList(0, 24);
                         }
 
                         event.replyChoices(options).queue();
@@ -77,7 +71,7 @@ public class CommandAutoCompleteInteraction extends ListenerAdapter {
 
             case "ignorecommand" -> {
                 if ("del".equals(event.getSubcommandName())) {
-                    List<Command.Choice> options = Config.ignorecommand.stream()
+                    List<Command.Choice> options = Config.getIgnorecommand().stream()
                             .filter(command -> command.contains(event.getFocusedOption().getValue()))
                             .map(command -> new Command.Choice(command, command)).toList();
 
@@ -102,7 +96,7 @@ public class CommandAutoCompleteInteraction extends ListenerAdapter {
                 if (!"command".equals(event.getSubcommandName())) return;
                 switch (event.getFocusedOption().getName()) {
                     case "name" -> {
-                        List<String> servers = new ArrayList<>(Velodicord.velodicord.proxy.getAllServers().stream().map(server -> server.getServerInfo().getName()).toList());
+                        List<String> servers = new ArrayList<>(Velodicord.getVelodicord().getProxy().getAllServers().stream().map(server -> server.getServerInfo().getName()).toList());
                         servers.add("velocity");
                         event.replyChoices(servers.stream()
                                 .filter(server -> server.contains(event.getFocusedOption().getValue()))
@@ -112,7 +106,7 @@ public class CommandAutoCompleteInteraction extends ListenerAdapter {
                     case "command" -> {
                         if (!"velocity".equals(event.getOptions().get(0).getAsString())) return;
 
-                        List<Command.Choice> options = ((VelocityCommandManager) Velodicord.velodicord.proxy.getCommandManager())
+                        List<Command.Choice> options = ((VelocityCommandManager) Velodicord.getVelodicord().getProxy().getCommandManager())
                                 .offerSuggestions(new DiscordCommandSource(null), event.getFocusedOption().getValue()).join()
                                 .stream().map(s -> new Command.Choice(s, s)).toList();
 
@@ -135,7 +129,7 @@ public class CommandAutoCompleteInteraction extends ListenerAdapter {
                     case "command" -> {
                         if (!"del".equals(event.getSubcommandName())) return;
 
-                        event.replyChoices(("discord".equals(event.getOptions().get(0).getAsString()) ? Config.disadmincommand : Config.mineadmincommand).stream()
+                        event.replyChoices(("discord".equals(event.getOptions().get(0).getAsString()) ? Config.getDisadmincommand() : Config.getMineadmincommand()).stream()
                                 .filter(command -> command.contains(event.getFocusedOption().getValue()))
                                 .map(command -> new Command.Choice(command, command)).toList()).queue();
                     }

@@ -1,70 +1,68 @@
 package velodicord.events.minecraft;
 
-import V4S4J.V4S4J.V4S4J;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ListenerCloseEvent;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import velodicord.Config;
-import velodicord.discordbot;
+import velodicord.Discordbot;
+import velodicord.Velodicord;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 import static velodicord.Config.*;
-import static velodicord.discordbot.jda;
-import static velodicord.discordbot.mentionable;
 
 
 public class ListenerClose {
     @Subscribe(order = PostOrder.FIRST)
     public void onListenerClose(ListenerCloseEvent event) {
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.configjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(config, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.getConfigjson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(getConfig(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのconfigを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.dicjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(dic, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.getDicjson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(getDic(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのdicを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.detectbotjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(detectbot, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.getDetectbotjson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(getDetectbot(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのdetectbotを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(ignorecommandjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(ignorecommand, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(getIgnorecommandjson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(getIgnorecommand(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのignorecommandを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(disadmincommandjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(disadmincommand, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(getDisadmincommandjson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(getDisadmincommand(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのdisadmincommandを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(mineadmincommandjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(mineadmincommand, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(getMineadmincommandjson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(getMineadmincommand(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのmineadmincommandを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.disspeakerjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(disspeaker, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.getDisspeakerjson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(getDisspeaker(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのdisspeakerを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.minespeakerjson)), StandardCharsets.UTF_8))) {
-            gson.toJson(minespeaker, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(Config.getMinespeakerjson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(getMinespeaker(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのminespeakerを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(mentionablejson)), StandardCharsets.UTF_8))) {
-            gson.toJson(mentionable, writer);
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(String.valueOf(getMentionablejson())), StandardCharsets.UTF_8))) {
+            getGson().toJson(Discordbot.getMentionable(), writer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Velodicord.getVelodicord().getLogger().error("Velodicordのmentionableを保存できませんでした: {}", ExceptionUtils.getStackTrace(e));
         }
-        V4S4J.fin();
-        discordbot.NoticeChannel.sendMessage("\uD83D\uDED1velocityサーバーが停止しました").complete();
-        jda.shutdown();
+        Discordbot.getNoticeChannel().sendMessage("\uD83D\uDED1velocityサーバーが停止しました").complete();
+        Discordbot.getJda().shutdown();
     }
 }

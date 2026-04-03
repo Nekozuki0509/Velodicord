@@ -4,36 +4,34 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
-import velodicord.DiscordCommandSource;
-import velodicord.VOICEVOX;
-import velodicord.discordbot;
-import velodicord.log;
+import velodicord.*;
+import velodicord.pmConnection.DiscordPluginMessageManager;
 
 import java.awt.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static velodicord.Config.*;
-import static velodicord.Velodicord.velodicord;
-import static velodicord.discordbot.*;
+import static velodicord.Discordbot.*;
 
 public class SlashCommandInteraction extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if (!CommandChannel.equals(event.getChannelId())) {
+        if (!getCommandChannel().equals(event.getChannelId())) {
             event.replyEmbeds(new EmbedBuilder()
                     .setColor(Color.red)
                     .setTitle("不明なチャンネルです")
                     .build()
             ).setEphemeral(true).queue();
             return;
-        } else if (!Objects.requireNonNull(event.getMember()).getRoles().contains(CommandRole) &&
-                disadmincommand.stream().anyMatch(event.getCommandString().substring(1)::startsWith)) {
+        } else if (!Objects.requireNonNull(event.getMember()).getRoles().contains(getCommandRole()) &&
+                getDisadmincommand().stream().anyMatch(event.getCommandString().substring(1)::startsWith)) {
             event.replyEmbeds(new EmbedBuilder()
                     .setColor(Color.red)
                     .setTitle("このコマンドを実行するのに必要な権限がありません")
@@ -45,25 +43,25 @@ public class SlashCommandInteraction extends ListenerAdapter {
         switch (event.getName()) {
             case "join" -> {
                 GuildVoiceState voiceState;
-                if (voicechannel != null) {
+                if (getVoicechannel() != null) {
                     event.replyEmbeds(new EmbedBuilder()
                             .setColor(Color.red)
-                            .setTitle("もうすでに" + Objects.requireNonNull(Objects.requireNonNull(event.getGuild()).getAudioManager().getConnectedChannel()).getName() + "に接続しています")
+                            .setTitle("もうすでに%sに接続しています".formatted(Objects.requireNonNull(Objects.requireNonNull(event.getGuild()).getAudioManager().getConnectedChannel()).getAsMention()))
                             .build()
                     ).setEphemeral(true).queue();
                     return;
                 }
                 if ((Objects.requireNonNull(voiceState = Objects.requireNonNull(event.getMember()).getVoiceState())).inAudioChannel()) {
-                    Objects.requireNonNull(event.getGuild()).getAudioManager().openAudioConnection(voiceState.getChannel());
+                    Objects.requireNonNull(event.getGuild()).getAudioManager().openAudioConnection(Objects.requireNonNull(voiceState.getChannel()));
                     event.getGuild().getAudioManager().setSelfDeafened(true);
                     event.replyEmbeds(new EmbedBuilder()
                             .setColor(Color.cyan)
-                            .setTitle("[" + Objects.requireNonNull(voiceState.getChannel()).getName() + "]に接続しました")
+                            .setTitle("[%s]に接続しました".formatted(voiceState.getChannel().getAsMention()))
                             .build()
                     ).queue();
 
-                    voicechannel = voiceState.getChannel().getId();
-                    sendvoicemessage("接続しました", DefaultSpeakerID);
+                    setVoicechannel(voiceState.getChannel().getId());
+                    sendvoicemessage("接続しました", getDefaultSpeakerID());
                 } else {
                     event.replyEmbeds(new EmbedBuilder()
                             .setColor(Color.red)
@@ -74,14 +72,14 @@ public class SlashCommandInteraction extends ListenerAdapter {
             }
 
             case "leave" -> {
-                if (voicechannel != null) {
+                if (getVoicechannel() != null) {
                     Objects.requireNonNull(event.getGuild()).getAudioManager().closeAudioConnection();
                     event.replyEmbeds(new EmbedBuilder()
                             .setColor(Color.orange)
                             .setTitle("切断しました")
                             .build()
                     ).queue();
-                    voicechannel = null;
+                    setVoicechannel(null);
                 } else {
                     event.replyEmbeds(new EmbedBuilder()
                             .setColor(Color.red)
@@ -95,7 +93,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
                     case "show" -> {
                         StringBuilder builder = new StringBuilder();
-                        dic.keySet().forEach(word -> builder.append("・ ").append(word).append(" -> ").append(dic.get(word)).append("\n"));
+                        getDic().keySet().forEach(word -> builder.append("・ ").append(word).append(" -> ").append(getDic().get(word)).append("\n"));
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("辞書に登録されている単語一覧")
                                 .setDescription(builder.toString())
@@ -107,14 +105,14 @@ public class SlashCommandInteraction extends ListenerAdapter {
                     case "add" -> {
                         String word = event.getOptions().get(0).getAsString();
                         String read = event.getOptions().get(1).getAsString();
-                        dic.put(word, read);
-                        dic = dic.entrySet().stream()
+                        getDic().put(word, read);
+                        setDic(getDic().entrySet().stream()
                                 .sorted(Map.Entry.comparingByKey(Comparator.comparingInt(String::length).reversed()))
                                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+                                        (oldValue, newValue) -> oldValue, LinkedHashMap::new)));
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("単語を登録・変更しました")
-                                .setDescription(word + " -> " + read)
+                                .setDescription("%s -> %s".formatted(word, read))
                                 .setColor(Color.blue)
                                 .build()
                         ).queue();
@@ -122,7 +120,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                     case "del" -> {
                         String word = event.getOptions().get(0).getAsString();
-                        dic.remove(word);
+                        getDic().remove(word);
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("単語を削除しました")
                                 .setDescription(word)
@@ -135,117 +133,138 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
             case "ch" -> {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
-                    case "show" -> event.replyEmbeds(new EmbedBuilder()
-                            .setTitle("設定されているチャンネル")
-                            .setDescription(
-                                    "ログチャンネル -> " + LogForumChannel.map(ForumChannel::getName).orElse("<<設定されていません>>") + "(" + LogForumChannel.map(ForumChannel::getId).orElse("<<設定されていません>>") + ")\n" +
-                                            "メインチャンネル -> " + MainChannel.getName() + "(" + MainChannel.getId() + ")\n" +
-                                            "PMチャンネル -> " + PMChannel.getName() + "(" + PMChannel.getId() + ")\n" +
-                                            "通知チャンネル 　   -> " + NoticeChannel.getName() + "(" + NoticeChannel.getId() + ")\n" +
-                                            "POSチャンネル 　   -> " + PosChannel.getName() + "(" + PosChannel.getId() + ")\n" +
-                                            "コマンドチャンネル 　-> " + Objects.requireNonNull(jda.getTextChannelById(CommandChannel)).getName() + "(" + CommandChannel + ")"
+                    case "show" -> {
+                        StringBuilder builder = new StringBuilder();
+                        builder.append("ログチャンネル -> ").append(getLogForumChannel().map(ForumChannel::getName).orElse("<<設定されていません>>")).append("(").append(getLogForumChannel().map(ForumChannel::getId).orElse("<<設定されていません>>")).append(")\n")
+                                .append("メインチャンネル -> ").append(getMainChannel().getName()).append("(").append(getMainChannel().getId()).append(")\n")
+                                .append("通知チャンネル 　   -> ").append(getNoticeChannel().getName()).append("(").append(getNoticeChannel().getId()).append(")\n")
+                                .append("POSチャンネル 　   -> ").append(getPosChannel().getName()).append("(").append(getPosChannel().getId()).append(")\n")
+                                .append("コマンドチャンネル 　-> ").append(Objects.requireNonNull(getJda().getTextChannelById(getCommandChannel())).getName()).append("(").append(getCommandChannel()).append(")\n");
 
-                            )
-                            .setColor(Color.blue)
-                            .build()
-                    ).setEphemeral(true).queue();
+                        if (Velodicord.getPMManager() instanceof DiscordPluginMessageManager manager)
+                            builder.append("PMチャンネル -> ").append(manager.getPMChannel().getName()).append("(").append(manager.getPMChannel().getId()).append(")");
+
+                        event.replyEmbeds(new EmbedBuilder()
+                                .setTitle("設定されているチャンネル")
+                                .setDescription(
+                                        builder.toString()
+                                )
+                                .setColor(Color.blue)
+                                .build()
+                        ).setEphemeral(true).queue();
+                    }
 
                     case "set" -> {
                         switch (event.getOptions().get(0).getAsString()) {
                             case "log" -> {
-                                LogForumChannel = Optional.of(event.getOptions().get(1).getAsChannel().asForumChannel());
-                                config.put("LogChannelID", LogForumChannel.get().getId());
+                                setLogForumChannel(Optional.of(event.getOptions().get(1).getAsChannel().asForumChannel()));
+                                getConfig().put("LogChannelID", getLogForumChannel().get().getId());
                                 event.replyEmbeds(new EmbedBuilder()
-                                        .setTitle("ログチャンネルを" + LogForumChannel.get().getName() + "(" + LogForumChannel.get().getId() + ")に設定しました")
+                                        .setTitle("ログチャンネルを%s(%s)に設定しました".formatted(getLogForumChannel().get().getName(), getLogForumChannel().get().getId()))
                                         .setColor(Color.blue)
                                         .build()
                                 ).queue();
 
-                                LogForumChannel.get().getThreadChannels()
+                                getLogForumChannel().get().getThreadChannels()
                                         .stream().filter(thread -> "velocity".equals(thread.getName())).findFirst().ifPresentOrElse(
-                                                log -> LogChannel = log,
+                                                Discordbot::setLogChannel,
 
-                                                () -> LogChannel = LogForumChannel.get()
-                                                        .createForumPost("velocity", MessageCreateData.fromContent("velocity server's log")).complete().getThreadChannel()
+                                                () -> setLogChannel(getLogForumChannel().get()
+                                                        .createForumPost("velocity", MessageCreateData.fromContent("velocity server's log")).complete().getThreadChannel())
                                         );
-                                if (log == null) (log = new Thread(new log(true))).start();
-                                else if (!log.isAlive()) (log = new Thread(new log(false))).start();
+                                if (getLog() == null) {
+                                    setLog(new Thread(new Log(true)));
+                                    getLog().start();
+                                } else if (!getLog().isAlive()) {
+                                    setLog(new Thread(new Log(false)));
+                                    getLog().start();
+                                }
                             }
 
                             case "main" -> {
-                                String lm = MainChannel.getId();
-                                MainChannel = event.getOptions().get(1).getAsChannel().asTextChannel();
-                                config.put("MainChannelID", MainChannel.getId());
-                                if (lm.equals(NoticeChannel.getId())) {
-                                    NoticeChannel = MainChannel;
-                                    config.put("NoticeChannelID", NoticeChannel.getId());
+                                String lm = getMainChannel().getId();
+                                setMainChannel(event.getOptions().get(1).getAsChannel().asTextChannel());
+                                getConfig().put("MainChannelID", getMainChannel().getId());
+                                if (lm.equals(getNoticeChannel().getId())) {
+                                    setNoticeChannel(getMainChannel());
+                                    getConfig().put("NoticeChannelID", getNoticeChannel().getId());
                                 }
-                                if (lm.equals(PMChannel.getId())) {
-                                    PMChannel = MainChannel;
-                                    config.put("PMChannelID", PMChannel.getId());
+                                if (lm.equals(getPosChannel().getId())) {
+                                    setPosChannel(getMainChannel());
+                                    getConfig().put("PosChannelID", getPosChannel().getId());
                                 }
-                                if (lm.equals(PosChannel.getId())) {
-                                    PosChannel = MainChannel;
-                                    config.put("PosChannelID", PosChannel.getId());
+                                if (lm.equals(getCommandChannel())) {
+                                    setCommandChannel(getMainChannel().getId());
+                                    getConfig().put("CommandChannelID", getCommandChannel());
                                 }
-                                if (lm.equals(CommandChannel)) {
-                                    CommandChannel = MainChannel.getId();
-                                    config.put("CommandChannelID", CommandChannel);
+                                if (Velodicord.getPMManager() instanceof DiscordPluginMessageManager manager && lm.equals(manager.getPMChannel().getId())) {
+                                    manager.setPMChannel(getMainChannel());
+                                    getConfig().put("PMChannelID", getMainChannel().getId());
                                 }
 
                                 String webhookname = "Velodicord";
-                                MainChannel.getGuild().retrieveWebhooks().complete().forEach(webhook -> {
-                                    if (webhookname.equals(webhook.getName())) discordbot.webhook = webhook;
+                                getMainChannel().getGuild().retrieveWebhooks().complete().forEach(webhook -> {
+                                    if (webhookname.equals(webhook.getName())) Discordbot.setWebhook(webhook);
                                 });
 
-                                if (webhook == null) {
-                                    webhook = MainChannel.createWebhook(webhookname).complete();
+                                if (getWebhook() == null) {
+                                    setWebhook(getMainChannel().createWebhook(webhookname).complete());
                                 }
 
                                 event.replyEmbeds(new EmbedBuilder()
-                                        .setTitle("メインチャンネルを" + MainChannel.getName() + "(" + MainChannel.getId() + ")に設定しました")
+                                        .setTitle("メインチャンネルを%s(%s)に設定しました".formatted(getMainChannel().getName(), getMainChannel().getId()))
                                         .setColor(Color.blue)
                                         .build()
                                 ).queue();
 
-                                discordbot.PMChannel.sendMessage("ALL&OK&" + NoticeChannel.getId() + "&" + LogForumChannel.map(ForumChannel::getId).orElse("") + "&" + CommandChannel + "&" + CommandRole.getId()).queue();
+                                Velodicord.getPMManager().sendMessage("ALL", "OK&%s&%s&%s&%s".formatted(getNoticeChannel().getId(), getLogForumChannel().map(ForumChannel::getId).orElse(""), getCommandChannel(), getCommandRole().getId()));
                             }
 
                             case "pm" -> {
-                                PMChannel = event.getOptions().get(1).getAsChannel().asTextChannel();
-                                config.put("PMChannelID", PMChannel.getId());
-                                event.replyEmbeds(new EmbedBuilder()
-                                        .setTitle("PMチャンネルを" + PMChannel.getName() + "(" + PMChannel.getId() + ")に設定しました")
-                                        .setColor(Color.blue)
-                                        .build()
-                                ).queue();
+                                if (Velodicord.getPMManager() instanceof DiscordPluginMessageManager manager) {
+                                    TextChannel pmtmp = event.getOptions().get(1).getAsChannel().asTextChannel();
+
+                                    manager.setPMChannel(pmtmp);
+                                    getConfig().put("PMChannelID", pmtmp.getId());
+                                    event.replyEmbeds(new EmbedBuilder()
+                                            .setTitle("PMチャンネルを%s(%s)に設定しました".formatted(pmtmp.getName(), pmtmp.getId()))
+                                            .setColor(Color.blue)
+                                            .build()
+                                    ).queue();
+                                } else {
+                                    event.replyEmbeds(new EmbedBuilder()
+                                            .setTitle("PMチャンネルはWebSocket版では設定できません")
+                                            .setColor(Color.red)
+                                            .build()
+                                    ).queue();
+                                }
                             }
 
                             case "notice" -> {
-                                NoticeChannel = event.getOptions().get(1).getAsChannel().asTextChannel();
-                                config.put("NoticeChannelID", NoticeChannel.getId());
+                                setNoticeChannel(event.getOptions().get(1).getAsChannel().asTextChannel());
+                                getConfig().put("NoticeChannelID", getNoticeChannel().getId());
                                 event.replyEmbeds(new EmbedBuilder()
-                                        .setTitle("通知チャンネルを" + NoticeChannel.getName() + "(" + NoticeChannel.getId() + ")に設定しました")
+                                        .setTitle("通知チャンネルを%s(%s)に設定しました".formatted(getNoticeChannel().getName(), getNoticeChannel().getId()))
                                         .setColor(Color.blue)
                                         .build()
                                 ).queue();
                             }
 
                             case "pos" -> {
-                                PosChannel = event.getOptions().get(1).getAsChannel().asTextChannel();
-                                config.put("PosChannelID", PosChannel.getId());
+                                setPosChannel(event.getOptions().get(1).getAsChannel().asTextChannel());
+                                getConfig().put("PosChannelID", getPosChannel().getId());
                                 event.replyEmbeds(new EmbedBuilder()
-                                        .setTitle("POSチャンネルを" + PosChannel.getName() + "(" + PosChannel.getId() + ")に設定しました")
+                                        .setTitle("POSチャンネルを%s(%s)に設定しました".formatted(getPosChannel().getName(), getPosChannel().getId()))
                                         .setColor(Color.blue)
                                         .build()
                                 ).queue();
                             }
 
                             case "command" -> {
-                                CommandChannel = event.getOptions().get(1).getAsChannel().asTextChannel().getId();
-                                config.put("CommandChannelID", CommandChannel);
+                                setCommandChannel(event.getOptions().get(1).getAsChannel().asTextChannel().getId());
+                                getConfig().put("CommandChannelID", getCommandChannel());
                                 event.replyEmbeds(new EmbedBuilder()
-                                        .setTitle("コマンドチャンネルを" + event.getOptions().get(1).getAsChannel().asTextChannel().getName() + "(" + CommandChannel + ")に設定しました")
+                                        .setTitle("コマンドチャンネルを%s(%s)に設定しました".formatted(event.getOptions().get(1).getAsChannel().asTextChannel().getName(), getCommandChannel()))
                                         .setColor(Color.blue)
                                         .build()
                                 ).queue();
@@ -254,8 +273,8 @@ public class SlashCommandInteraction extends ListenerAdapter {
                     }
 
                     case "del_log" -> {
-                        log.interrupt();
-                        config.put("LogChannelID", "000000");
+                        getLog().interrupt();
+                        getConfig().put("LogChannelID", "000000");
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("ログチャンネルを削除しました")
                                 .setColor(Color.red)
@@ -269,16 +288,16 @@ public class SlashCommandInteraction extends ListenerAdapter {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
                     case "show" -> event.replyEmbeds(new EmbedBuilder()
                             .setTitle("設定されているロール")
-                            .setDescription(CommandRole.getName() + "(" + CommandRole.getId() + ")")
+                            .setDescription("%s(%s)".formatted(getCommandRole().getName(), getCommandRole().getId()))
                             .setColor(Color.blue)
                             .build()
                     ).setEphemeral(true).queue();
 
                     case "set" -> {
-                        CommandRole = event.getOptions().get(0).getAsRole();
-                        config.put("CommandRoleID", CommandRole.getId());
+                        setCommandRole(event.getOptions().get(0).getAsRole());
+                        getConfig().put("CommandRoleID", getCommandRole().getId());
                         event.replyEmbeds(new EmbedBuilder()
-                                .setTitle("コマンドロールを" + CommandRole.getName() + "(" + CommandRole.getId() + ")に設定しました")
+                                .setTitle("コマンドロールを%s(%s)に設定しました".formatted(getCommandRole().getName(), getCommandRole().getId()))
                                 .setColor(Color.blue)
                                 .build()
                         ).queue();
@@ -290,7 +309,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
                     case "show" -> {
                         StringBuilder bots = new StringBuilder();
-                        detectbot.forEach(id -> bots.append("・ ").append(Objects.requireNonNull(jda.getUserById(id)).getName()).append("(").append(id).append(")\n"));
+                        getDetectbot().forEach(id -> bots.append("・ ").append(Objects.requireNonNull(getJda().getUserById(id)).getName()).append("(").append(id).append(")\n"));
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("登録されている発言を無視しないbot一覧")
                                 .setDescription(bots)
@@ -301,9 +320,9 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                     case "add" -> {
                         User bot = event.getOptions().get(0).getAsUser();
-                        detectbot.add(bot.getId());
+                        getDetectbot().add(bot.getId());
                         event.replyEmbeds(new EmbedBuilder()
-                                .setTitle(bot.getName() + "(" + bot.getId() + ")を登録しました")
+                                .setTitle("%s(%s)を登録しました".formatted(bot.getName(), bot.getId()))
                                 .setColor(Color.blue)
                                 .build()
                         ).queue();
@@ -311,9 +330,9 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                     case "del" -> {
                         User bot = event.getOptions().get(0).getAsUser();
-                        detectbot.remove(bot.getId());
+                        getDetectbot().remove(bot.getId());
                         event.replyEmbeds(new EmbedBuilder()
-                                .setTitle(bot.getName() + "(" + bot.getId() + ")を削除しました")
+                                .setTitle("%s(%s)を削除しました".formatted(bot.getName(), bot.getId()))
                                 .setColor(Color.blue)
                                 .build()
                         ).queue();
@@ -325,7 +344,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
                     case "all" -> {
                         StringBuilder speakers = new StringBuilder();
-                        VOICEVOX.voicevox.keySet().forEach(id -> speakers.append("・ ").append(VOICEVOX.voicevox.get(id)).append(" & ").append(id).append("\n"));
+                        Voicevox.getVoicevox().forEach(m -> speakers.append("・ ").append(m.name()).append(" & ").append(m.id()).append("\n"));
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("話者の種類とそのID")
                                 .setDescription(speakers)
@@ -335,10 +354,10 @@ public class SlashCommandInteraction extends ListenerAdapter {
                     }
 
                     case "your" -> {
-                        int id = disspeaker.getOrDefault(event.getUser().getId(), DefaultSpeakerID);
+                        int id = getDisspeaker().getOrDefault(event.getUser().getId(), getDefaultSpeakerID());
                         event.replyEmbeds(new EmbedBuilder()
-                                .setTitle(event.getUser().getName() + "の話者")
-                                .setDescription(VOICEVOX.voicevox.get(id) + "(" + id + ")")
+                                .setTitle("%sの話者".formatted(event.getUser().getName()))
+                                .setDescription("%s(%d)".formatted(Voicevox.getVoicevox().stream().filter(m -> m.id() == id).findFirst().get().name(), id))
                                 .setColor(Color.blue)
                                 .build()
                         ).setEphemeral(true).queue();
@@ -346,7 +365,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                     case "default" -> event.replyEmbeds(new EmbedBuilder()
                             .setTitle("デフォルトの話者")
-                            .setDescription(VOICEVOX.voicevox.get(DefaultSpeakerID) + "(" + DefaultSpeakerID + ")")
+                            .setDescription("%s(%d)".formatted(Voicevox.getVoicevox().stream().filter(m -> m.id() == getDefaultSpeakerID()).findFirst().get(), getDefaultSpeakerID()))
                             .setColor(Color.blue)
                             .build()
                     ).setEphemeral(true).queue();
@@ -355,40 +374,44 @@ public class SlashCommandInteraction extends ListenerAdapter {
                         switch (event.getOptions().get(0).getAsString()) {
                             case "your" -> {
                                 int id = event.getOptions().get(1).getAsInt();
-                                if (VOICEVOX.voicevox.containsKey(id)) {
-                                    disspeaker.put(event.getUser().getId(), id);
-                                    event.replyEmbeds(new EmbedBuilder()
-                                            .setTitle(VOICEVOX.voicevox.get(id) + "に設定しました")
-                                            .setColor(Color.blue)
-                                            .build()
-                                    ).setEphemeral(true).queue();
-                                    sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
-                                } else {
-                                    event.replyEmbeds(new EmbedBuilder()
-                                            .setTitle(id + "を持つ話者はいません")
-                                            .setColor(Color.red)
-                                            .build()
-                                    ).setEphemeral(true).queue();
-                                }
+                                Voicevox.getVoicevox().stream().filter(m -> m.id() == id).findFirst().ifPresentOrElse(
+                                        m -> {
+                                            getDisspeaker().put(event.getUser().getId(), id);
+                                            event.replyEmbeds(new EmbedBuilder()
+                                                    .setTitle("%sに設定しました".formatted(m.name()))
+                                                    .setColor(Color.blue)
+                                                    .build()
+                                            ).setEphemeral(true).queue();
+                                            sendvoicemessage("%sに設定しました".formatted(m.name()), id);
+                                        },
+
+                                        () -> event.replyEmbeds(new EmbedBuilder()
+                                                .setTitle("%dを持つ話者はいません".formatted(id))
+                                                .setColor(Color.red)
+                                                .build()
+                                        ).setEphemeral(true).queue()
+                                );
                             }
 
                             case "default" -> {
                                 int id = event.getOptions().get(1).getAsInt();
-                                if (VOICEVOX.voicevox.containsKey(id)) {
-                                    config.put("DefaultSpeakerID", String.valueOf(id));
-                                    event.replyEmbeds(new EmbedBuilder()
-                                            .setTitle(VOICEVOX.voicevox.get(id) + "に設定しました")
-                                            .setColor(Color.blue)
-                                            .build()
-                                    ).queue();
-                                    sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
-                                } else {
-                                    event.replyEmbeds(new EmbedBuilder()
-                                            .setTitle(id + "を持つ話者はいません")
-                                            .setColor(Color.red)
-                                            .build()
-                                    ).setEphemeral(true).queue();
-                                }
+                                Voicevox.getVoicevox().stream().filter(m -> m.id() == id).findFirst().ifPresentOrElse(
+                                        m -> {
+                                            getConfig().put("DefaultSpeakerID", String.valueOf(id));
+                                            event.replyEmbeds(new EmbedBuilder()
+                                                    .setTitle("%sに設定しました".formatted(m.name()))
+                                                    .setColor(Color.blue)
+                                                    .build()
+                                            ).queue();
+                                            sendvoicemessage("%sに設定しました".formatted(m.name()), id);
+                                        },
+
+                                        () -> event.replyEmbeds(new EmbedBuilder()
+                                                .setTitle("%dを持つ話者はいません".formatted(id))
+                                                .setColor(Color.red)
+                                                .build()
+                                        ).setEphemeral(true).queue()
+                                );
                             }
                         }
                     }
@@ -399,7 +422,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
                     case "show" -> {
                         StringBuilder builder = new StringBuilder();
-                        ignorecommand.forEach(command -> builder.append("・ ").append(command).append("\n"));
+                        getIgnorecommand().forEach(command -> builder.append("・ ").append(command).append("\n"));
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("登録されている通知しないコマンド一覧")
                                 .setDescription(builder.toString())
@@ -410,7 +433,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                     case "add" -> {
                         String command = event.getOptions().get(0).getAsString();
-                        ignorecommand.add(command);
+                        getIgnorecommand().add(command);
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("コマンドを登録しました")
                                 .setDescription(command)
@@ -421,7 +444,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                     case "del" -> {
                         String command = event.getOptions().get(0).getAsString();
-                        ignorecommand.remove(command);
+                        getIgnorecommand().remove(command);
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("コマンドを削除しました")
                                 .setDescription(command)
@@ -436,7 +459,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
                     case "show" -> {
                         StringBuilder builder = new StringBuilder();
-                        mentionable.forEach(mention -> builder.append("・ ").append(mention).append("\n"));
+                        getMentionable().forEach(mention -> builder.append("・ ").append(mention).append("\n"));
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("登録されているメンション可能ロール")
                                 .setDescription(builder.toString())
@@ -447,9 +470,9 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                     case "set" -> {
                         StringBuilder builder = new StringBuilder();
-                        mentionable.clear();
-                        mentionable.addAll(event.getOptions().stream().map(OptionMapping::getAsString).toList());
-                        mentionable.forEach(mention -> builder.append("・ ").append(mention).append("\n"));
+                        getMentionable().clear();
+                        getMentionable().addAll(event.getOptions().stream().map(OptionMapping::getAsString).toList());
+                        getMentionable().forEach(mention -> builder.append("・ ").append(mention).append("\n"));
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("メンション可能ロールを設定しました")
                                 .setDescription(builder.toString())
@@ -464,11 +487,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
                     case "info" -> event.replyEmbeds(new EmbedBuilder()
                             .setTitle("velocity info")
-                            .setDescription("```\n\n" +
-                                    "( " + velodicord.proxy.getPlayerCount() + " )人のプレイヤーがオンライン\n\n" +
-                                    "使用メモリ:\n" +
-                                    (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024 + " MB / " +
-                                    Runtime.getRuntime().totalMemory() / 1024 / 1024 + " MB\n```"
+                            .setDescription("```\n\n( %d )人のプレイヤーがオンライン\n\n使用メモリ:\n%d MB / %d MB\n```".formatted(Velodicord.getVelodicord().getProxy().getPlayerCount(), (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024, Runtime.getRuntime().totalMemory() / 1024 / 1024)
                             )
                             .setColor(Color.green)
                             .build()
@@ -479,8 +498,8 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                         String command = event.getOptions().get(1).getAsString();
 
-                        if (!Objects.requireNonNull(event.getMember()).getRoles().contains(CommandRole) &&
-                                mineadmincommand.stream().anyMatch(command::startsWith)) {
+                        if (!Objects.requireNonNull(event.getMember()).getRoles().contains(getCommandRole()) &&
+                                getMineadmincommand().stream().anyMatch(command::startsWith)) {
                             event.replyEmbeds(new EmbedBuilder()
                                     .setColor(Color.red)
                                     .setTitle("このコマンドを実行するのに必要な権限がありません")
@@ -489,7 +508,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                             return;
                         }
 
-                        if (!(Boolean) velodicord.proxy.getCommandManager().executeAsync(new DiscordCommandSource(event), command).join()) {
+                        if (!(Boolean) Velodicord.getVelodicord().getProxy().getCommandManager().executeAsync(new DiscordCommandSource(event), command).join()) {
                             event.replyEmbeds(new EmbedBuilder()
                                     .setColor(Color.red)
                                     .setTitle("このコマンドは存在しません")
@@ -504,9 +523,9 @@ public class SlashCommandInteraction extends ListenerAdapter {
                 switch (Objects.requireNonNull(event.getSubcommandName())) {
                     case "show" -> {
                         StringBuilder builder = new StringBuilder("discordの管理者コマンド\n");
-                        disadmincommand.forEach(command -> builder.append("・ ").append(command).append("\n"));
+                        getDisadmincommand().forEach(command -> builder.append("・ ").append(command).append("\n"));
                         builder.append("\nマイクラの管理者コマンド\n");
-                        mineadmincommand.forEach(command -> builder.append("・ ").append(command).append("\n"));
+                        getMineadmincommand().forEach(command -> builder.append("・ ").append(command).append("\n"));
                         event.replyEmbeds(new EmbedBuilder()
                                 .setTitle("登録されている管理者コマンドコマンド一覧")
                                 .setDescription(builder.toString())
@@ -520,7 +539,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                         switch (event.getOptions().get(0).getAsString()) {
                             case "discord" -> {
-                                disadmincommand.add(command);
+                                getDisadmincommand().add(command);
                                 event.replyEmbeds(new EmbedBuilder()
                                         .setTitle("discordの管理者コマンドを登録しました")
                                         .setDescription(command)
@@ -530,7 +549,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                             }
 
                             case "マイクラ" -> {
-                                mineadmincommand.add(command);
+                                getMineadmincommand().add(command);
                                 event.replyEmbeds(new EmbedBuilder()
                                         .setTitle("マイクラの管理者コマンドを登録しました")
                                         .setDescription(command)
@@ -546,7 +565,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
 
                         switch (event.getOptions().get(0).getAsString()) {
                             case "discord" -> {
-                                disadmincommand.remove(command);
+                                getDisadmincommand().remove(command);
                                 event.replyEmbeds(new EmbedBuilder()
                                         .setTitle("discordの管理者コマンドを削除しました")
                                         .setDescription(command)
@@ -556,7 +575,7 @@ public class SlashCommandInteraction extends ListenerAdapter {
                             }
 
                             case "マイクラ" -> {
-                                mineadmincommand.remove(command);
+                                getMineadmincommand().remove(command);
                                 event.replyEmbeds(new EmbedBuilder()
                                         .setTitle("discordの管理者コマンドを削除しました")
                                         .setDescription(command)

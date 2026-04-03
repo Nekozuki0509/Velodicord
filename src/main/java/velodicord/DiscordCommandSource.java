@@ -48,15 +48,13 @@ public class DiscordCommandSource implements ConsoleCommandSource {
         }
 
         if (currentOutputMillis - this.lastOutputMillis > 50L) {
-            (new Thread(() -> {
-                (new Timer()).schedule(new TimerTask() {
-                    public void run() {
-                        DiscordCommandSource.this.output.append("```");
-                        DiscordCommandSource.this.event.getChannel().sendMessage(DiscordCommandSource.this.output.toString()).queue();
-                        DiscordCommandSource.this.output = new StringBuilder("```\n");
-                    }
-                }, 51L);
-            })).start();
+            (new Thread(() -> (new Timer()).schedule(new TimerTask() {
+                public void run() {
+                    DiscordCommandSource.this.output.append("```");
+                    DiscordCommandSource.this.event.getChannel().sendMessage(DiscordCommandSource.this.output.toString()).queue();
+                    DiscordCommandSource.this.output = new StringBuilder("```\n");
+                }
+            }, 51L))).start();
         }
 
         this.lastOutputMillis = currentOutputMillis;

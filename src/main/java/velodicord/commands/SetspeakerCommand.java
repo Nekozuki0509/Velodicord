@@ -3,8 +3,8 @@ package velodicord.commands;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import velodicord.Config;
-import velodicord.VOICEVOX;
-import velodicord.discordbot;
+import velodicord.Discordbot;
+import velodicord.Voicevox;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -19,17 +19,18 @@ public final class SetspeakerCommand implements SimpleCommand {
     public void execute(final Invocation invocation) {
         int id = Integer.parseInt(invocation.arguments()[0]);
         if (invocation.source() instanceof Player player) {
-            if (VOICEVOX.voicevox.containsKey(id)) {
-                Config.minespeaker.put(player.getUniqueId().toString(), id);
-                player.sendMessage(text()
-                        .append(text(VOICEVOX.voicevox.get(id), AQUA))
-                        .append(text("に設定しました"))
-                        .build()
-                );
-                discordbot.sendvoicemessage(VOICEVOX.voicevox.get(id) + "に設定しました", id);
-            } else {
-                player.sendMessage(text(id + "を持つ話者はいません", RED));
-            }
+            Voicevox.getVoicevox().stream().filter(m -> m.id() == id).findFirst().ifPresentOrElse(
+                    m -> {
+                        Config.getMinespeaker().put(player.getUniqueId().toString(), id);
+                        player.sendMessage(text()
+                                .append(text(m.name(), AQUA))
+                                .append(text("に設定しました"))
+                                .build()
+                        );
+                        Discordbot.sendvoicemessage("%sに設定しました".formatted(Voicevox.getVoicevox().get(id)), id);
+                    },
+                    () -> player.sendMessage(text("%dを持つ話者はいません".formatted(id), RED))
+            );
         }
     }
 

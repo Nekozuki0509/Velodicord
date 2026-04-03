@@ -5,16 +5,23 @@ import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import lombok.Getter;
 import org.slf4j.Logger;
 import velodicord.commands.PlayerlistCommand;
 import velodicord.commands.ServerCommand;
 import velodicord.commands.SetspeakerCommand;
-import velodicord.events.minecraft.*;
+import velodicord.events.minecraft.Disconnect;
+import velodicord.events.minecraft.ListenerClose;
+import velodicord.events.minecraft.PlayerChat;
+import velodicord.events.minecraft.ServerConnected;
+import velodicord.pmConnection.DiscordPluginMessageManager;
+import velodicord.pmConnection.PluginMessageManager;
+import velodicord.pmConnection.WebSocketPluginMessageManager;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 @Plugin(
@@ -24,38 +31,47 @@ import java.nio.file.Path;
 )
 public class Velodicord {
 
-    public final Logger logger;
+    @Getter
+    private final Logger logger;
 
-    public final ProxyServer proxy;
+    @Getter
+    private final ProxyServer proxy;
 
-    public static Velodicord velodicord;
+    @Getter
+    private static Velodicord velodicord;
+
+    @Getter
+    private static PluginMessageManager PMManager;
+
+    @Getter
+    private static int WebSocketPortIncrement;
 
     @Inject
     public Velodicord(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
         this.proxy = proxy;
         this.logger = logger;
-        Config.dataDirectory = dataDirectory;
-        Config.configjson = dataDirectory.resolve("config.json");
-        Config.dicjson = dataDirectory.resolve("dic.json");
-        Config.detectbotjson = dataDirectory.resolve("detectbot.json");
-        Config.ignorecommandjson = dataDirectory.resolve("ignorecommand.json");
-        Config.disadmincommandjson = dataDirectory.resolve("disadmincommand.json");
-        Config.mineadmincommandjson = dataDirectory.resolve("mineadmincommand.json");
-        Config.disspeakerjson = dataDirectory.resolve("disspeaker.json");
-        Config.minespeakerjson = dataDirectory.resolve("minespeaker.json");
-        Config.mentionablejson = dataDirectory.resolve("mentionable.json");
+        Config.setDataDirectory(dataDirectory);
+        Config.setConfigjson(dataDirectory.resolve("config.json"));
+        Config.setDicjson(dataDirectory.resolve("dic.json"));
+        Config.setDetectbotjson(dataDirectory.resolve("detectbot.json"));
+        Config.setIgnorecommandjson(dataDirectory.resolve("ignorecommand.json"));
+        Config.setDisadmincommandjson(dataDirectory.resolve("disadmincommand.json"));
+        Config.setMineadmincommandjson(dataDirectory.resolve("mineadmincommand.json"));
+        Config.setDisspeakerjson(dataDirectory.resolve("disspeaker.json"));
+        Config.setMinespeakerjson(dataDirectory.resolve("minespeaker.json"));
+        Config.setMentionablejson(dataDirectory.resolve("mentionable.json"));
         velodicord = this;
 
         logger.info("Velodicord loaded");
     }
 
     @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent event) throws InterruptedException, IOException {
+    public void onProxyInitialization(ProxyInitializeEvent event) {
         Config.init();
 
-        discordbot.init();
+        Discordbot.init();
 
-        discordbot.NoticeChannel.sendMessage("✅velocityサーバーが起動しました").queue();
+        Discordbot.getNoticeChannel().sendMessage("✅velocityサーバーが起動しました").queue();
 
         proxy.getEventManager().register(this, new ListenerClose());
 
@@ -64,6 +80,14 @@ public class Velodicord {
         proxy.getEventManager().register(this, new ServerConnected());
 
         proxy.getEventManager().register(this, new PlayerChat());
+
+        proxy.getEventManager().register(this, ProxyShutdownEvent.class, e -> {
+            if (PMManager instanceof WebSocketPluginMessageManager manager) manager.closeAll();
+        });
+
+        WebSocketPortIncrement = Integer.parseInt(Config.getConfig().get("WebSocketPortIncrement"));
+
+        PMManager = Config.getConfig().get("PMType").equals("1") ? new DiscordPluginMessageManager() : new WebSocketPluginMessageManager();
 
         CommandManager commandManager = proxy.getCommandManager();
 

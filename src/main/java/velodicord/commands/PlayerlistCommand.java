@@ -11,10 +11,10 @@ public class PlayerlistCommand implements RawCommand {
     @Override
     public void execute(Invocation invocation) {
         TextComponent.Builder players = text();
-        Velodicord.velodicord.proxy.getAllPlayers().forEach(player -> players
+        Velodicord.getVelodicord().getProxy().getAllPlayers().forEach(player -> players
                 .append(text("・"))
-                .append(text("[" + player.getCurrentServer().get().getServerInfo().getName() + "]", DARK_GREEN))
+                .append(text("[%s]".formatted(player.getCurrentServer().get().getServerInfo().getName()), DARK_GREEN))
                 .append(text(player.getUsername() + "\n")));
-        Velodicord.velodicord.proxy.sendMessage(players.build());
+        Velodicord.getVelodicord().getProxy().sendMessage(players.build());
     }
 }

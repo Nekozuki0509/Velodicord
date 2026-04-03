@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class log implements Runnable {
+public class Log implements Runnable {
 
     private static final Pattern FORMAT_PATTERN = Pattern.compile("§.");
     private static final Integer MAX_MESSAGE_LENGTH = 1900;
@@ -24,13 +24,13 @@ public class log implements Runnable {
     private static int MINECRAFT_SEND_COUNT = 0;
     private boolean readFileHistory;
 
-    public log(boolean readFileHistory) {
+    public Log(boolean readFileHistory) {
         this.readFileHistory = readFileHistory;
     }
 
     @Override
     public void run() {
-        final File file = new File(String.valueOf(Config.dataDirectory.getParent().toAbsolutePath().getParent().toAbsolutePath()
+        final File file = new File(String.valueOf(Config.getDataDirectory().getParent().toAbsolutePath().getParent().toAbsolutePath()
                 .resolve("logs").resolve("latest.log")));
 
         while (true) {
@@ -105,7 +105,7 @@ public class log implements Runnable {
             } catch (InterruptedException e) {
                 return;
             } catch (Exception e) {
-                Velodicord.velodicord.logger.error(ExceptionUtils.getStackTrace(e));
+                Velodicord.getVelodicord().getLogger().error(ExceptionUtils.getStackTrace(e));
                 readFileHistory = false;
             }
         }
@@ -129,7 +129,7 @@ public class log implements Runnable {
         }
         MINECRAFT_SEND_COUNT++;
         if (MINECRAFT_SEND_COUNT <= 20) {
-            discordbot.LogChannel.sendMessage(message).queue();
+            Discordbot.getLogChannel().sendMessage(message).queue();
         }
     }
 }

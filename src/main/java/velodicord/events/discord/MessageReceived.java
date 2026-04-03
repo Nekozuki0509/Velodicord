@@ -1,37 +1,29 @@
 package velodicord.events.discord;
 
 import com.github.ucchyocean.lc3.japanize.Japanizer;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.utils.FileUpload;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import velodicord.Config;
-import velodicord.discordbot;
+import velodicord.Velodicord;
+import velodicord.pmConnection.DiscordPluginMessageManager;
+import velodicord.pmConnection.PluginMessageManager;
 
 import javax.annotation.Nonnull;
-import java.awt.*;
 import java.util.regex.Pattern;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
-import static velodicord.Config.*;
-import static velodicord.Velodicord.velodicord;
-import static velodicord.discordbot.*;
+import static velodicord.Discordbot.*;
 
 public class MessageReceived extends ListenerAdapter {
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if (!(event.getAuthor().isBot() && !Config.detectbot.contains(event.getAuthor().getId())) && event.getChannel().getId().equals(MainChannel.getId())) {
+        if (!(event.getAuthor().isBot() && !Config.getDetectbot().contains(event.getAuthor().getId())) && (event.getChannel().getId().equals(getMainChannel().getId()) || event.getChannel().getId().equals(getVoicechannel()))) {
             String message = event.getMessage().getContentDisplay();
-            String japanese;
-            if (!(japanese = (!(japanese = Japanizer.japanize(message)).isEmpty() ? "(" + japanese + ")" : "")).isEmpty()
-                    && !message.contains("https://") && !message.contains("http://") && !message.contains("```"))
-                event.getMessage().reply(message + japanese).queue();
             String cutmessage = message;
-            for (String word : dic.keySet()) {
-                cutmessage = cutmessage.replaceAll(word, dic.get(word));
+            for (String word : Config.getDic().keySet()) {
+                cutmessage = cutmessage.replaceAll(word, Config.getDic().get(word));
             }
             cutmessage = cutmessage.replaceAll("~~(.*?)~~", "$1")
                     .replaceAll("\\*\\*(.*?)\\*\\*", "$1")
@@ -69,94 +61,18 @@ public class MessageReceived extends ListenerAdapter {
                     temp += "<+添付ファイル>";
                 }
             }
-            velodicord.proxy.sendMessage(text()
+            Velodicord.getVelodicord().getProxy().sendMessage(text()
                     .append(text("[discord]", DARK_GREEN))
-                    .append(text("<" + event.getAuthor().getName() + "> "))
+                    .append(text("<%s> ".formatted(event.getAuthor().getName())))
                     .append(MiniMessage.miniMessage().deserialize(mmessage))
-                    .append(text(!(mmessage = Japanizer.japanize(mmessage)).isEmpty() && !message.contains("https://") && !message.contains("http://") && !message.contains("```") ? "(" + mmessage + ")" : "", GOLD))
+                    .append(text(!(mmessage = Japanizer.japanize(mmessage)).isEmpty() && !message.contains("https://") && !message.contains("http://") && !message.contains("```") ? "(%s)".formatted(mmessage) : "", GOLD))
                     .append(text(temp, BLUE))
             );
 
-            String cutjapanese = !(cutjapanese = Japanizer.japanize(cutmessage)).isEmpty() ? "(" + cutjapanese + ")" : "";
-            sendvoicemessage(cutmessage + cutjapanese, Config.disspeaker.getOrDefault(event.getAuthor().getId(), DefaultSpeakerID));
-        } else if (event.getChannel().getId().equals(PMChannel.getId())) {
-            //to:what:data
-            String[] data = event.getMessage().getContentDisplay().split("&");
-            if ("VELOCITY".equals(data[0])) {
-                switch (data[1]) {
-                    case "OK" -> {
-                        PMChannel.sendMessage(data[2] + "&OK&" + NoticeChannel.getId() + "&" + LogForumChannel.map(ForumChannel::getId).orElse("") + "&" + CommandChannel + "&" + CommandRole.getId())
-                                .setFiles(FileUpload.fromData(ignorecommandjson.toFile()), FileUpload.fromData(disadmincommandjson.toFile()), FileUpload.fromData(mineadmincommandjson.toFile())).queue();
-                        velodicord.proxy.sendMessage(text()
-                                .append(text("✅ "))
-                                .append(text("[" + data[2] + "]", DARK_GREEN))
-                                .append(text(" が起動しました", YELLOW))
-                        );
-
-                        discordbot.sendvoicemessage(data[2] + "が起動しました", DefaultSpeakerID);
-                    }
-
-                    case "FIN" -> {
-                        velodicord.proxy.sendMessage(text()
-                                .append(text("\uD83D\uDED1 "))
-                                .append(text("[" + data[2] + "]", DARK_GREEN))
-                                .append(text(" が停止しました", YELLOW))
-                        );
-
-                        discordbot.sendvoicemessage(data[2] + "が停止しました", DefaultSpeakerID);
-                    }
-
-                    case "SEND" -> velodicord.proxy.sendMessage(MiniMessage.miniMessage().deserialize(data[2]));
-
-                    case "READ" -> {
-                        velodicord.proxy.sendMessage(MiniMessage.miniMessage().deserialize(data[2]));
-                        String message = data[3];
-                        for (String word : Config.dic.keySet()) {
-                            message = message.replaceAll(word, Config.dic.get(word));
-                        }
-                        discordbot.sendvoicemessage(message, DefaultSpeakerID);
-                    }
-
-                    case "POS" -> {
-                        velodicord.proxy.sendMessage(text()
-                                .append(text("<" + data[2] + "> ", BLUE))
-                                .append(text("POS:[", GOLD))
-                                .append(text("[" + data[1] + "]", DARK_GREEN))
-                                .append(text(data[3], GREEN))
-                                .append(text(data[4], AQUA))
-                                .append(text("]", GOLD))
-                                .build());
-                        MainChannel.sendMessageEmbeds(new EmbedBuilder()
-                                .setTitle("POS:[[" + data[1] + "]" + data[3] + data[4] + "]")
-                                .setColor(Color.cyan)
-                                .setAuthor(data[2], null, "https://mc-heads.net/avatar/" + data[2] + ".png")
-                                .build()).queue();
-                    }
-
-                    case "NPOS" -> {
-                        velodicord.proxy.sendMessage(text()
-                                .append(text("<" + data[2] + "> ", BLUE))
-                                .append(text(data[5] + ":[", GOLD))
-                                .append(text("[" + data[1] + "]", DARK_GREEN))
-                                .append(text(data[3], GREEN))
-                                .append(text(data[4], AQUA))
-                                .append(text("]", GOLD))
-                                .build());
-                        MainChannel.sendMessageEmbeds(new EmbedBuilder()
-                                .setTitle(data[5] + ":[[" + data[1] + "]" + data[3] + data[4] + "]")
-                                .setColor(Color.cyan)
-                                .setAuthor(data[2], null, "https://mc-heads.net/avatar/" + data[2] + ".png")
-                                .build()).queue();
-                        if (!discordbot.PosChannel.getId().equals(MainChannel.getId())) {
-                            discordbot.PosChannel.sendMessageEmbeds(new EmbedBuilder()
-                                    .setTitle(data[5] + ":[[" + data[1] + "]" + data[3] + data[4] + "]")
-                                    .setColor(Color.cyan)
-                                    .setAuthor(data[2], null, "https://mc-heads.net/avatar/" + data[2] + ".png")
-                                    .build()).queue();
-                        }
-                    }
-                }
-            }
+            String japanized = Japanizer.japanize(cutmessage);
+            sendvoicemessage(japanized.isEmpty() ? cutmessage : japanized, Config.getDisspeaker().getOrDefault(event.getAuthor().getId(), getDefaultSpeakerID()));
+        } else if (Velodicord.getPMManager() instanceof DiscordPluginMessageManager manager && event.getChannel().getId().equals(manager.getPMChannel().getId())) {
+            PluginMessageManager.receive(event.getMessage().getContentDisplay());
         }
     }
 }

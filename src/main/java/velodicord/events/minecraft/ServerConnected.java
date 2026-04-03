@@ -4,13 +4,13 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import velodicord.Config;
-import velodicord.discordbot;
+import velodicord.Discordbot;
+import velodicord.Velodicord;
 
 import java.awt.*;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
-import static velodicord.Velodicord.velodicord;
 
 public class ServerConnected {
     @Subscribe
@@ -20,37 +20,37 @@ public class ServerConnected {
 
         event.getPreviousServer().ifPresentOrElse(
                 server -> {
-                    velodicord.proxy.sendMessage(text()
-                            .append(text("[" + player + "]", AQUA))
+                    Velodicord.getVelodicord().getProxy().sendMessage(text()
+                            .append(text("[%s]".formatted(player), AQUA))
                             .append(text(" が ", YELLOW))
-                            .append(text("[" + server.getServerInfo().getName() + "]", DARK_GREEN))
+                            .append(text("[%s]".formatted(server.getServerInfo().getName()), DARK_GREEN))
                             .append(text(" から ", YELLOW))
-                            .append(text("[" + targetServer + "]", DARK_GREEN))
+                            .append(text("[%s]".formatted(targetServer), DARK_GREEN))
                             .append(text(" へ移動しました", YELLOW))
                     );
-                    discordbot.NoticeChannel.sendMessageEmbeds(new EmbedBuilder()
-                            .setTitle("[" + server.getServerInfo().getName() + "] から [" + targetServer + "] へ移動しました")
+                    Discordbot.getNoticeChannel().sendMessageEmbeds(new EmbedBuilder()
+                            .setTitle("[%s] から [%s] へ移動しました".formatted(server.getServerInfo().getName(), targetServer))
                             .setColor(Color.blue)
-                            .setAuthor(player, null, "https://mc-heads.net/avatar/" + player + ".png")
+                            .setAuthor(player, null, "https://mc-heads.net/avatar/%s.png".formatted(player))
                             .build()).queue();
                 },
                 () -> {
-                    velodicord.proxy.sendMessage(text()
-                            .append(text("[" + player + "]", AQUA))
+                    Velodicord.getVelodicord().getProxy().sendMessage(text()
+                            .append(text("[%s]".formatted(player), AQUA))
                             .append(text(" が ", YELLOW))
-                            .append(text("[" + targetServer + "]", DARK_GREEN))
+                            .append(text("[%s]".formatted(targetServer), DARK_GREEN))
                             .append(text(" に入室しました", YELLOW))
                     );
-                    discordbot.NoticeChannel.sendMessageEmbeds(new EmbedBuilder()
-                            .setTitle("[" + targetServer + "] に入室しました")
+                    Discordbot.getNoticeChannel().sendMessageEmbeds(new EmbedBuilder()
+                            .setTitle("[%s] に入室しました".formatted(targetServer))
                             .setColor(Color.blue)
-                            .setAuthor(player, null, "https://mc-heads.net/avatar/" + player + ".png")
+                            .setAuthor(player, null, "https://mc-heads.net/avatar/%s.png".formatted(player))
                             .build()).queue();
-                    String message = player + "が" + targetServer + "に入室しました";
-                    for (String word : Config.dic.keySet()) {
-                        message = message.replaceAll(word, Config.dic.get(word));
+                    String message = "%sが%sに入室しました".formatted(player, targetServer);
+                    for (String word : Config.getDic().keySet()) {
+                        message = message.replaceAll(word, Config.getDic().get(word));
                     }
-                    discordbot.sendvoicemessage(message, discordbot.DefaultSpeakerID);
+                    Discordbot.sendvoicemessage(message, Discordbot.getDefaultSpeakerID());
                 }
         );
     }

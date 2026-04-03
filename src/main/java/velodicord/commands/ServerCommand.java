@@ -19,7 +19,7 @@ public class ServerCommand implements RawCommand {
             invocation.source().sendMessage(Component.text("プレイヤーしかこのコマンドを使えません").color(TextColor.color(Color.RED.getRGB())));
         } else {
             String commandName = invocation.alias();
-            RegisteredServer server = Velodicord.velodicord.proxy.getServer(commandName).orElse(null);
+            RegisteredServer server = Velodicord.getVelodicord().getProxy().getServer(commandName).orElse(null);
             if (server == null) {
                 player.sendMessage(Component.text("サーバーが見つかりません").color(TextColor.color(Color.RED.getRGB())));
             } else {

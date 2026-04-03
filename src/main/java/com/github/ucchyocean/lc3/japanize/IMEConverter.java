@@ -6,11 +6,14 @@
 package com.github.ucchyocean.lc3.japanize;
 
 import com.google.common.io.CharStreams;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import velodicord.Velodicord;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * ひらがなのみの文章を、IMEを使用して変換します。
@@ -50,7 +53,7 @@ public class IMEConverter {
     // 変換の実行
     private static String conv(String org, boolean isGoogleIME) {
 
-        if (org.length() == 0) {
+        if (org.isEmpty()) {
             return "";
         }
 
@@ -60,10 +63,10 @@ public class IMEConverter {
             String baseurl;
             String encode;
             if (isGoogleIME) {
-                baseurl = GOOGLE_IME_URL + URLEncoder.encode(org, "UTF-8");
+                baseurl = GOOGLE_IME_URL + URLEncoder.encode(org, StandardCharsets.UTF_8);
                 encode = "UTF-8";
             } else {
-                baseurl = SOCIAL_IME_URL + URLEncoder.encode(org, "UTF-8");
+                baseurl = SOCIAL_IME_URL + URLEncoder.encode(org, StandardCharsets.UTF_8);
                 encode = "EUC_JP";
             }
             URL url = new URL(baseurl);
@@ -77,19 +80,15 @@ public class IMEConverter {
                     new InputStreamReader(urlconn.getInputStream(), encode));
 
             String json = CharStreams.toString(reader);
-            String parsed = GoogleIME.parseJson(json);
-//            if ( !Utility.isCB19orLater() ) {
-//                parsed = YukiKanaConverter.fixBrackets(parsed);
-//            }
 
-            return parsed;
+            return GoogleIME.parseJson(json);
 
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            Velodicord.getVelodicord().getLogger().error("URLの形式が正しくありません: {}", ExceptionUtils.getStackTrace(e));
         } catch (ProtocolException e) {
-            e.printStackTrace();
+            Velodicord.getVelodicord().getLogger().error("HTTPのプロトコルエラーが発生しました: {}", ExceptionUtils.getStackTrace(e));
         } catch (IOException e) {
-            e.printStackTrace();
+            Velodicord.getVelodicord().getLogger().error("通信エラーが発生しました: {}", ExceptionUtils.getStackTrace(e));
         } finally {
             if (urlconn != null) {
                 urlconn.disconnect();

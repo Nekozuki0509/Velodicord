@@ -1,8 +1,12 @@
 package velodicord;
 
-import V4S4J.V4S4J.V4S4J;
+import lombok.Getter;
+import lombok.Setter;
+import moe.kyokobot.libdave.NativeDaveFactory;
+import moe.kyokobot.libdave.jda.LDJDADaveSessionFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
@@ -14,62 +18,91 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
-import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import velodicord.events.discord.CommandAutoCompleteInteraction;
 import velodicord.events.discord.GuildVoiceUpdate;
 import velodicord.events.discord.MessageReceived;
 import velodicord.events.discord.SlashCommandInteraction;
 import velodicord.lavaplayer.PlayerManager;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static velodicord.Config.*;
 
+public class Discordbot {
 
-public class discordbot {
+    @Getter
+    private static JDA jda;
 
-    public static JDA jda;
+    @Getter
+    @Setter
+    private static Optional<ForumChannel> LogForumChannel;
 
-    public static Optional<ForumChannel> LogForumChannel;
+    @Getter
+    @Setter
+    private static ThreadChannel LogChannel;
 
-    public static ThreadChannel LogChannel;
+    @Getter
+    @Setter
+    private static TextChannel MainChannel;
 
-    public static TextChannel MainChannel;
+    @Getter
+    @Setter
+    private static TextChannel NoticeChannel;
 
-    public static TextChannel PMChannel;
+    @Getter
+    @Setter
+    private static TextChannel PosChannel;
 
-    public static TextChannel NoticeChannel;
+    @Getter
+    @Setter
+    private static String CommandChannel;
 
-    public static TextChannel PosChannel;
+    @Getter
+    @Setter
+    private static String voicechannel;
 
-    public static String CommandChannel;
+    @Getter
+    @Setter
+    private static Role CommandRole;
 
-    public static String voicechannel;
+    @Getter
+    private static int DefaultSpeakerID;
 
-    public static Role CommandRole;
+    @Getter
+    @Setter
+    private static Webhook webhook;
 
-    public static int DefaultSpeakerID;
+    @Getter
+    @Setter
+    private static List<String> mentionable = new ArrayList<>();
 
-    public static Webhook webhook;
+    @Getter
+    @Setter
+    private static Thread log;
 
-    public static List<String> mentionable = new ArrayList<>();
+    private static final Path wavPath = Path.of(String.valueOf(Config.getDataDirectory().resolve("result.wav")));
 
-    public static Thread log;
+    static void init() {
 
-    static void init() throws InterruptedException {
-
-        jda = JDABuilder.createDefault(Config.config.get("BotToken"))
+        jda = JDABuilder.createDefault(Config.getConfig().get("BotToken"))
+                .setAudioModuleConfig(new AudioModuleConfig().withDaveSessionFactory(new LDJDADaveSessionFactory(new NativeDaveFactory())))
                 .setChunkingFilter(ChunkingFilter.ALL)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(new GuildVoiceUpdate(), new MessageReceived(), new SlashCommandInteraction(), new CommandAutoCompleteInteraction())
                 .build();
 
-        jda.awaitReady();
+        try {
+            jda.awaitReady();
+        } catch (InterruptedException e) {
+            Velodicord.getVelodicord().getLogger().error("JDAの初期化に失敗: {}", ExceptionUtils.getStackTrace(e));
+        }
+
         jda.updateCommands().addCommands(
                 Commands.slash("join", "ボイスチャンネルへの参加"),
                 Commands.slash("leave", "ボイスチャンネルからの退出"),
@@ -151,7 +184,7 @@ public class discordbot {
                         )
         ).queue();
 
-        LogForumChannel = Optional.ofNullable(jda.getForumChannelById(Config.config.get("LogChannelID")));
+        LogForumChannel = Optional.ofNullable(jda.getForumChannelById(Config.getConfig().get("LogChannelID")));
 
         LogForumChannel.ifPresent(forum -> {
             forum.getThreadChannels().stream().filter(thread -> "velocity".equals(thread.getName())).findFirst().ifPresentOrElse(
@@ -160,37 +193,33 @@ public class discordbot {
                     () -> LogChannel = LogForumChannel.get().createForumPost("velocity", MessageCreateData.fromContent("velocity server's log"))
                             .complete().getThreadChannel()
             );
-            (log = new Thread(new log(true))).start();
+            (log = new Thread(new Log(true))).start();
         });
 
-        MainChannel = Optional.ofNullable(jda.getTextChannelById(Config.config.get("MainChannelID"))).orElseThrow();
-        PMChannel = Optional.ofNullable(jda.getTextChannelById(Config.config.get("PMChannelID"))).orElse(MainChannel);
-        NoticeChannel = Optional.ofNullable(jda.getTextChannelById(Config.config.get("NoticeChannelID"))).orElse(MainChannel);
-        PosChannel = Optional.ofNullable(jda.getTextChannelById(Config.config.get("PosChannelID"))).orElse(MainChannel);
-        CommandChannel = Optional.ofNullable(jda.getTextChannelById(Config.config.get("CommandChannelID"))).orElse(MainChannel).getId();
+        MainChannel = Optional.ofNullable(jda.getTextChannelById(Config.getConfig().get("MainChannelID"))).orElseThrow();
+        NoticeChannel = Optional.ofNullable(jda.getTextChannelById(Config.getConfig().get("NoticeChannelID"))).orElse(MainChannel);
+        PosChannel = Optional.ofNullable(jda.getTextChannelById(Config.getConfig().get("PosChannelID"))).orElse(MainChannel);
+        CommandChannel = Optional.ofNullable(jda.getTextChannelById(Config.getConfig().get("CommandChannelID"))).orElse(MainChannel).getId();
 
-        CommandRole = Optional.ofNullable(jda.getRoleById(Config.config.get("CommandRoleID"))).orElseThrow();
+        CommandRole = Optional.ofNullable(jda.getRoleById(Config.getConfig().get("CommandRoleID"))).orElseThrow();
 
-        DefaultSpeakerID = Integer.parseInt(Config.config.get("DefaultSpeakerID"));
+        DefaultSpeakerID = Integer.parseInt(Config.getConfig().get("DefaultSpeakerID"));
 
         String webhookname = "Velodicord";
         MainChannel.retrieveWebhooks().complete().forEach(webhook -> {
-            if (webhookname.equals(webhook.getName())) discordbot.webhook = webhook;
+            if (webhookname.equals(webhook.getName())) Discordbot.webhook = webhook;
         });
 
         if (webhook == null) {
             webhook = MainChannel.createWebhook(webhookname).complete();
         }
-
-        discordbot.PMChannel.sendMessage("ALL&OK&" + NoticeChannel.getId() + "&" + LogForumChannel.map(ForumChannel::getId).orElse("") + "&" + CommandChannel + "&" + CommandRole.getId())
-                .setFiles(FileUpload.fromData(ignorecommandjson.toFile()), FileUpload.fromData(disadmincommandjson.toFile()), FileUpload.fromData(mineadmincommandjson.toFile())).queue();
     }
 
-    public static void sendvoicemessage(String message, int speaker) {
+    public static void sendvoicemessage(String msg, int id) {
         if (voicechannel == null) return;
-        String path = String.valueOf(Config.dataDirectory.resolve("result.wav"));
-        if (V4S4J.tts(message, path, speaker)) {
-            PlayerManager.getInstance().loadAndPlay(MainChannel, path);
+
+        if (Voicevox.tts(msg, id, wavPath)) {
+            PlayerManager.getInstance().loadAndPlay(MainChannel, String.valueOf(wavPath));
         }
     }
 }

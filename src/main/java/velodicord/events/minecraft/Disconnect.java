@@ -5,32 +5,32 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import velodicord.Config;
-import velodicord.discordbot;
+import velodicord.Discordbot;
+import velodicord.Velodicord;
 
 import java.awt.*;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
 import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
-import static velodicord.Velodicord.velodicord;
 
 public class Disconnect {
     @Subscribe(order = PostOrder.FIRST)
     public void onDisconnect(DisconnectEvent event) {
         String player = event.getPlayer().getUsername();
-        velodicord.proxy.sendMessage(text()
-                .append(text("[" + player + "]", AQUA))
+        Velodicord.getVelodicord().getProxy().sendMessage(text()
+                .append(text("[%s]".formatted(player), AQUA))
                 .append(text(" が退出しました", YELLOW))
         );
-        discordbot.NoticeChannel.sendMessageEmbeds(new EmbedBuilder()
+        Discordbot.getNoticeChannel().sendMessageEmbeds(new EmbedBuilder()
                 .setTitle("退出しました")
                 .setColor(Color.blue)
-                .setAuthor(player, null, "https://mc-heads.net/avatar/" + player + ".png")
+                .setAuthor(player, null, "https://mc-heads.net/avatar/%s.png".formatted(player))
                 .build()).queue();
-        String message = player + "がマイクラサーバーから退出しました";
-        for (String word : Config.dic.keySet()) {
-            message = message.replaceAll(word, Config.dic.get(word));
+        String message = "%sがマイクラサーバーから退出しました".formatted(player);
+        for (String word : Config.getDic().keySet()) {
+            message = message.replaceAll(word, Config.getDic().get(word));
         }
-        discordbot.sendvoicemessage(message, discordbot.DefaultSpeakerID);
+        Discordbot.sendvoicemessage(message, Discordbot.getDefaultSpeakerID());
     }
 }
