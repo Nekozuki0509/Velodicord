@@ -42,14 +42,14 @@ public class ServerConnected {
                             .append(text("[%s]".formatted(playerName), AQUA))
                             .append(text(" が ", YELLOW))
                             .append(text("[%s]".formatted(targetServer), DARK_GREEN))
-                            .append(text(" に入室しました", YELLOW))
+                            .append(text(" に参加しました", YELLOW))
                     );
                     Discordbot.getNoticeChannel().sendMessageEmbeds(new EmbedBuilder()
-                            .setTitle("[%s] に入室しました".formatted(targetServer))
+                            .setTitle("[%s] に参加しました".formatted(targetServer))
                             .setColor(Color.blue)
                             .setAuthor(playerName, null, "https://mc-heads.net/avatar/%s.png".formatted(playerName))
                             .build()).queue();
-                    String message = "%sが%sに入室しました".formatted(playerName, targetServer);
+                    String message = "%sが%sに参加しました".formatted(playerName, targetServer);
                     for (String word : Config.getDic().keySet()) {
                         message = message.replaceAll(word, Config.getDic().get(word));
                     }
@@ -57,29 +57,40 @@ public class ServerConnected {
                 }
         );
 
-        java.util.List<TabListEntry> tabListEntries = new java.util.ArrayList<>(Velodicord.getVelodicord().getProxy().getAllPlayers().stream().map(player -> TabListEntry.builder()
-                .profile(player.getGameProfile())
-                .displayName(Component.text()
-                        .append(text("[%s] ".formatted(player.getCurrentServer().isPresent() ? player.getCurrentServer().get().getServerInfo().getName() : targetServer), DARK_GREEN))
-                        .append(text("%s".formatted(player.getUsername())))
-                        .build()
-                )
-                .tabList(Velodicord.getVelodicord().getProxy().getAllPlayers().stream().findAny().orElseThrow().getTabList())
-                .build()
-        ).toList());
-
-        tabListEntries.addAll(Velodicord.getBots().values());
-
         new Thread(() -> {
+            java.util.List<TabListEntry> tabListEntries = new java.util.ArrayList<>(Velodicord.getVelodicord().getProxy().getAllPlayers().stream().map(player -> TabListEntry.builder()
+                    .profile(player.getGameProfile())
+                    .displayName(Component.text()
+                            .append(text("[%s] ".formatted(player.getCurrentServer().isPresent() ? player.getCurrentServer().get().getServerInfo().getName() : targetServer), DARK_GREEN))
+                            .append(text("%s".formatted(player.getUsername())))
+                            .build()
+                    )
+                    .tabList(player.getTabList())
+                    .build()
+            ).toList());
+
+            tabListEntries.addAll(Velodicord.getBots().values().stream().map(botInfo -> TabListEntry.builder()
+                    .profile(botInfo.gameProfile())
+                    .displayName(Component.text()
+                            .append(text("[%s] ".formatted(botInfo.server()), DARK_GREEN))
+                            .append(text("(BOT) ", BLUE))
+                            .append(text(botInfo.name()))
+                            .build()
+                    )
+                    .tabList(Velodicord.getVelodicord().getProxy().getAllPlayers().stream().findAny().orElseThrow().getTabList())
+                    .build()
+            ).toList());
+
             try {
-                Thread.sleep(500);
-                Velodicord.getVelodicord().getProxy().getAllPlayers().forEach(player -> {
-                    player.getTabList().clearAll();
-                    player.getTabList().addEntries(tabListEntries);
-                });
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Velodicord.getVelodicord().getLogger().error("TabList更新スレッドが割り込まれました: {}", ExceptionUtils.getStackTrace(e));
             }
+
+            Velodicord.getVelodicord().getProxy().getAllPlayers().forEach(player -> {
+                player.getTabList().clearAll();
+                player.getTabList().addEntries(tabListEntries);
+            });
         }).start();
     }
 }
