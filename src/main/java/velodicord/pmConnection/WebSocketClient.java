@@ -28,7 +28,7 @@ public class WebSocketClient {
 
     private volatile boolean connecting = false;
 
-    private String serverName;
+    private final String serverName;
 
     public WebSocketClient(InetSocketAddress address, String serverName) {
         this.uri = "ws://%s:%d/ws/pm".formatted(address.getAddress().getHostAddress(), address.getPort() + Velodicord.getWebSocketPortIncrement());

@@ -9,6 +9,7 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.player.TabListEntry;
 import lombok.Getter;
 import org.slf4j.Logger;
 import velodicord.commands.PlayerlistCommand;
@@ -23,6 +24,9 @@ import velodicord.pmConnection.PluginMessageManager;
 import velodicord.pmConnection.WebSocketPluginMessageManager;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @Plugin(
         id = "velodicord",
@@ -45,6 +49,9 @@ public class Velodicord {
 
     @Getter
     private static int WebSocketPortIncrement;
+
+    @Getter
+    private static Map<UUID, TabListEntry> bots = new HashMap<>();
 
     @Inject
     public Velodicord(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {

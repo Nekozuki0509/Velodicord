@@ -17,20 +17,22 @@ import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 public class Disconnect {
     @Subscribe(order = PostOrder.FIRST)
     public void onDisconnect(DisconnectEvent event) {
-        String player = event.getPlayer().getUsername();
+        String playerName = event.getPlayer().getUsername();
         Velodicord.getVelodicord().getProxy().sendMessage(text()
-                .append(text("[%s]".formatted(player), AQUA))
+                .append(text("[%s]".formatted(playerName), AQUA))
                 .append(text(" が退出しました", YELLOW))
         );
         Discordbot.getNoticeChannel().sendMessageEmbeds(new EmbedBuilder()
                 .setTitle("退出しました")
                 .setColor(Color.blue)
-                .setAuthor(player, null, "https://mc-heads.net/avatar/%s.png".formatted(player))
+                .setAuthor(playerName, null, "https://mc-heads.net/avatar/%s.png".formatted(playerName))
                 .build()).queue();
-        String message = "%sがマイクラサーバーから退出しました".formatted(player);
+        String message = "%sがマイクラサーバーから退出しました".formatted(playerName);
         for (String word : Config.getDic().keySet()) {
             message = message.replaceAll(word, Config.getDic().get(word));
         }
         Discordbot.sendvoicemessage(message, Discordbot.getDefaultSpeakerID());
+
+        Velodicord.getVelodicord().getProxy().getAllPlayers().forEach(player -> player.getTabList().removeEntry(event.getPlayer().getUniqueId()));
     }
 }
